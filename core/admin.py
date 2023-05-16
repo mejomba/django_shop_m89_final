@@ -12,7 +12,7 @@ class CustomUserAdmin(UserAdmin):
         (_('Personal Info'), {'fields': ('first_name', 'last_name', 'profile_image')}),
         (
             _('Permissions'),
-            {'fields': ('is_active', 'is_staff', 'is_superuser', 'is_deleted')}
+            {'fields': ('is_active', 'is_staff', 'is_superuser', 'is_deleted', 'discount')}
         ),
         (_('Important dates'), {'fields': ('last_login',)})
     )
@@ -52,3 +52,4 @@ class AdminAddress(admin.ModelAdmin):
 
 admin.site.register(models.User, CustomUserAdmin)
 admin.site.register(models.Address, AdminAddress)
+admin.site.register(models.Discount)

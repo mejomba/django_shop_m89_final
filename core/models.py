@@ -3,6 +3,7 @@ import os
 
 from django.contrib.auth.base_user import BaseUserManager
 from django.conf import settings
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.utils import timezone
@@ -63,15 +64,23 @@ class User(BaseModel, AbstractBaseUser, PermissionsMixin):
     role = models.CharField(verbose_name='نقش کاربر', choices=USER_ROLE, max_length=1)
     profile_image = models.ImageField(verbose_name='تصویر پروفایل', upload_to=user_image_file_path, null=True, blank=True)
 
+    discount = models.ForeignKey('Discount', on_delete=models.SET_NULL, null=True, blank=True)
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
+
+    class Meta:
+        verbose_name = 'کاربر'
+        verbose_name_plural = 'کاربر ها'
 
     @property
     def full_name(self):
         if (f := self.first_name) and (l := self.last_name):
             return f'{f} {l}'
         return f'{self.email}'
+
+    # def get_discounts(self):
+    #     return "\n".join([d.neme for d in self.discount.all()])
 
 
 class Address(BaseModel):
@@ -90,3 +99,36 @@ class Address(BaseModel):
 
     def __str__(self):
         return f'{self.user.full_name}'
+
+
+class Discount(BaseModel):
+    name = models.CharField(verbose_name='نام تخفیف', max_length=255, unique=True)
+    code = models.CharField(verbose_name='کد تخفیف', unique=True, max_length=16)
+    percent = models.PositiveIntegerField(verbose_name='درصد تخفیف',
+                                          validators=[MinValueValidator(1), MaxValueValidator(100)],
+                                          null=True, blank=True)
+    mablagh = models.PositiveIntegerField(verbose_name='حداکثر مبلغ قابل تخفیف', null=True, blank=True)
+    limit = models.PositiveIntegerField(verbose_name='حداکثر تعداد قابل فروش (خالی برای نامحدود)', null=True, blank=True)
+    start_date = models.DateTimeField(verbose_name='تاریخ شروع')
+    end_date = models.DateTimeField(verbose_name='تاریخ پایان')
+    single_use = models.BooleanField(verbose_name='یکبار مصرف', default=True)
+    meta_description = models.CharField(verbose_name='توضیح کوتاه (SEO)', max_length=255)
+    description = models.TextField(verbose_name='توضیحات', max_length=1000)
+
+    class Meta:
+        verbose_name = 'تخفیف'
+        verbose_name_plural = 'تخفیف ها'
+
+        constraints = [
+            models.CheckConstraint(
+                name="%(app_label)s_%(class)s_percent_or_mablagh",
+                check=(
+                    models.Q(percent__isnull=True, mablagh__isnull=False)
+                    | models.Q(percent__isnull=False, mablagh__isnull=True)
+                    | models.Q(percent__isnull=False, mablagh__isnull=False)
+                ),
+            )
+        ]
+
+    def __str__(self):
+        return f'{self.code}'
