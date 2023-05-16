@@ -38,8 +38,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    # third party
+    # 'prettyjson',
+
     # our app
     'core.apps.CoreConfig',
+    'shop.apps.ShopConfig',
 ]
 
 MIDDLEWARE = [
