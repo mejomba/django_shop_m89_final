@@ -27,7 +27,9 @@ class ProductAdmin(admin.ModelAdmin):
               'extra_data',
               'discount',
               'category',
-              'tag')
+              'tag',
+              'magic_sale',
+              )
     # formfield_overrides = {
     #     JSONField: {'widget': PrettyJSONWidget}
     # }

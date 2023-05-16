@@ -47,9 +47,10 @@ class Product(BaseModel):
     extra_data = models.JSONField(verbose_name='مشخصات اضافه(JSON)', null=True, blank=True)
     thumbnail = models.ImageField(verbose_name='تصویر اصلی', upload_to=post_image_file_path)
 
-    discount = models.ManyToManyField(Discount, related_name='product_discount_related_name', null=True, blank=True)
-    category = models.ManyToManyField('Category', related_name='product_category_related_name')
+    discount = models.ManyToManyField(Discount, related_name='product_discount_related_name', null=True, blank=True, verbose_name='تخفیف')
+    category = models.ManyToManyField('Category', related_name='product_category_related_name',verbose_name='دسته بندی')
     tag = models.ManyToManyField('Tag', related_name='product_category_related_name')
+    magic_sale = models.ForeignKey('MagicSale', on_delete=models.CASCADE, verbose_name='حراج شگفت انگیز')
 
     class Meta:
         verbose_name = 'محصول'
@@ -129,3 +130,24 @@ class Comment(BaseModel):
 
     def __str__(self):
         return f'{self.title}'
+
+
+class MagicSale(BaseModel):
+    name = models.CharField(verbose_name='نام', max_length=255)
+    slug = models.SlugField(verbose_name='نام منحصر به فرد', max_length=100, unique=True)
+    start_date = models.DateTimeField(verbose_name='تاریخ شروع')
+    end_date = models.DateTimeField(verbose_name='تاریخ پایان')
+
+    class Meta:
+        verbose_name = 'حراج شگفت انگیز'
+        verbose_name_plural = 'حراج های شگفت انگیز'
+
+    def __str__(self):
+        return f'{self.name}'
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+            self.save()
+        return super().save(*args, **kwargs)
+
