@@ -112,8 +112,8 @@ class Discount(BaseModel):
     start_date = models.DateTimeField(verbose_name='تاریخ شروع')
     end_date = models.DateTimeField(verbose_name='تاریخ پایان')
     single_use = models.BooleanField(verbose_name='یکبار مصرف', default=True)
-    meta_description = models.CharField(verbose_name='توضیح کوتاه (SEO)', max_length=255)
-    description = models.TextField(verbose_name='توضیحات', max_length=1000)
+    meta_description = models.CharField(verbose_name='توضیح کوتاه (SEO)', max_length=255, null=True, blank=True)
+    description = models.TextField(verbose_name='توضیحات', max_length=1000, null=True, blank=True)
 
     class Meta:
         verbose_name = 'تخفیف'
