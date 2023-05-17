@@ -16,7 +16,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  direction: ltr;
+  direction: rtl;
   text-align: left;
 }
 .form {
@@ -71,11 +71,12 @@ body {
   outline: none;
   background-color: transparent;
   color: inherit;
+  text-align: left;
 }
 .form .input-group label {
   position: absolute;
   top: 0;
-  left: 0;
+  right: 0;
   padding: 10px 0;
   font-size: 1rem;
   pointer-events: none;
@@ -86,4 +87,7 @@ body {
   transform: translateY(-18px);
   color: #ff652f;
   font-size: .8rem;
+}
+.text-right {
+  text-align: right !important;
 }
