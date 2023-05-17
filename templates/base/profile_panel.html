@@ -1,4 +1,3 @@
-{% extends 'base/base.html' %}
 {% load static %}
 
 {% block custom_css %}
@@ -7,9 +6,7 @@
 
 
 
-
-{% block content %}
-{% comment %} <section class="d-flex">
+<section class="d-flex">
     <div class="panel-width" id="side-panel">
         <!-- ============ SIDE PANEL OPEN-CLOSE ============ -->
         <div class="bg-slate-800 position-fixed top-16 bottom-0 inner-panel-width z-10">
@@ -66,41 +63,9 @@
                 </li>
             </ul>
         </div>
-    </div> {% endcomment %}
-
-    {% include 'base/profile_panel.html' %}
-    <div class="w-100">
-        <div class="container my-5">
-            <!-- <h2 class="text-center p-4">خرید های شما</h2> -->
-            <div class="row">
-                
-                <div class="col-12 border-2 border-orange-500 p-2 my-3 rounded">
-                    <!-- card -->
-                    
-                    {% include 'core/order_history.html' %}
-
-                </div>                
-
-                <div class="col-12 border-2 border-orange-500 p-2 my-3 rounded">
-                    <!-- card -->
-                    data
-                </div>                
-
-                <div class="col-12 border-2 border-orange-500 p-2 my-3 rounded">
-                    <!-- card -->
-                    data
-                </div>                
-
-            </div>            
-        </div>
     </div>
-</section>
 
 
-
-
-
-{% endblock %}
 
 {% block custom_js %} 
 <script src="{% static 'core/js/profile.js' %}"></script>
