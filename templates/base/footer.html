@@ -1,25 +1,31 @@
-
-    <footer class="mt-5 container-fluid">
+{% load static %}
+    <footer class="mt-5 pt-4 container-fluid">
         <div class="row  px-5">
             <div class="col-md-4 border-left">
-                <a href="#" class="d-block">item1</a>
-                <a href="#" class="d-block">item2</a>
-                <a href="#" class="d-block">item3</a>
-                <a href="#" class="d-block">item4</a>
-                <a href="#" class="d-block">item5</a>
+                <a href="#" class="d-block my-1">item1</a>
+                <a href="#" class="d-block my-1">item2</a>
+                <a href="#" class="d-block my-1">item3</a>
+                <a href="#" class="d-block my-1">item4</a>
+                <a href="#" class="d-block my-1">item5</a>
             </div>
             <div class="col-md-4 border-left">
-                <a href="#" class="d-block">item1</a>
-                <a href="#" class="d-block">item2</a>
-                <a href="#" class="d-block">item3</a>
-                <a href="#" class="d-block">item4</a>
-                <a href="#" class="d-block">item5</a>
+                <a href="#" class="d-block my-1">item1</a>
+                <a href="#" class="d-block my-1">item2</a>
+                <a href="#" class="d-block my-1">item3</a>
+                <a href="#" class="d-block my-1">item5</a>
             </div>
-            <div class="col-md-4 text-center">
-                <img src="../../uploads/post/2023-05-16/15d5e258-9a21-45f6-8fd6-1cc9e22de46a.png" alt="" width="200" class="border">
-                <img src="../../uploads/post/2023-05-16/15d5e258-9a21-45f6-8fd6-1cc9e22de46a.png" alt="" width="200" class="border">
+            <div class="col-md-4">
+                <div class="d-flex justify-content-around">
+                    <a href="#">
+                        <img src="{% static 'base/images/enamad.jpg' %}" alt="" width="200" class="border">
+                    </a>
+                    <a href="#">
+                        <img src="{% static 'base/images/samandehi.jpg' %}" alt="" width="160" class="border">
+                    </a>
+                </div>      
             </div>
         </div>
-        <div class="text-center font-weight-bold">© <a href="#" >shop.ir</a> </div>
+        <div style="height: 5px; width:100%; background-color: var(--c1);"></div>
+        <div class="text-center font-weight-bold py-2">© <a href="#" >shop.ir</a> </div>
     </footer>
 
