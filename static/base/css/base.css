@@ -1,0 +1,111 @@
+@import url('https://cdn.fontcdn.ir/Font/Persian/Samim/Samim.css');
+@import url("https://fonts.googleapis.com/icon?family=Material+Icons");
+
+
+:root {
+    --c1:#ecf9f2;
+    --c2:#f0f5f5;
+    --c3:#001408;
+    --c4:#1a3300;
+    --c5:#0000b3;
+    --c6:#1ac6ff;
+    --c7:#0000b3;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html body {
+    direction: rtl;
+    text-align: right;
+    font-family: Samim;
+    font-size: 1rem;
+    background-color: var(--c2);
+}
+body {
+    /*margin:0;*/
+    color: var(--c3);
+
+}
+a:link {
+    text-decoration: none;
+}
+/* bootstrap card customize */
+.card{
+    overflow: hidden;
+    border-radius: 4px;
+    background: #fff;
+    box-shadow: 0 6px 10px rgba(0,0,0,.08), 0 0 6px rgba(0,0,0,.05);
+      transition: .3s transform cubic-bezier(.155,1.105,.295,1.12),.3s box-shadow,.3s -webkit-transform cubic-bezier(.155,1.105,.295,1.12);
+  cursor: pointer;
+}
+
+.card:hover{
+     transform: scale(1.05);
+  box-shadow: 0 10px 20px rgba(0,0,0,.12), 0 4px 8px rgba(0,0,0,.06);
+}
+
+.card img {
+    box-shadow: 0 6px 10px rgba(0,0,0,.08), 0 0 6px rgba(0,0,0,.05);
+      transition: .3s transform cubic-bezier(.155,1.105,.295,1.12),.3s box-shadow,.3s -webkit-transform cubic-bezier(.155,1.105,.295,1.12);
+  cursor: pointer;
+}
+.card img:hover {
+    opacity: 0.85;
+    transform: scale(1.2);
+    box-shadow: 0 10px 20px rgba(0,0,0,.12), 0 4px 8px rgba(0,0,0,.06);
+}
+
+.category-text {
+    opacity: 0.8;
+    box-shadow: 0 6px 10px rgba(0,0,0,.08), 0 0 6px rgba(0,0,0,.05);
+    transition: .3s transform cubic-bezier(.155,1.105,.295,1.12),.3s box-shadow,.3s -webkit-transform cubic-bezier(.155,1.105,.295,1.12);
+    cursor: pointer;
+    background-color: var(--c1);
+}
+.category-text:hover {
+    opacity: 1;
+    transform: scale(1.1);
+    box-shadow: 0 10px 20px rgba(0,0,0,.12), 0 4px 8px rgba(0,0,0,.06);
+}
+.z-10 {
+    z-index: 10;
+}
+.centered {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+footer {
+    background-color: var(--c3);
+    
+}
+footer a {
+    color: var(--c1) !important;
+}
+footer a:hover {
+    color: var(--c6) !important;
+}
+.pt-10 {
+    padding-top: 5rem !important;
+}
+.mt-10 {
+    margin-top: 5rem !important;
+}
+.mt-20 {
+    margin-top: 10rem !important;
+}
+.mt-30 {
+    margin-top: 15rem !important;
+}
+.mt-40 {
+    margin-top: 20rem !important;
+}
+.mt-50 {
+    margin-top: 25rem !important;
+}
