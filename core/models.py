@@ -1,3 +1,4 @@
+from typing import Any
 import uuid
 import os
 import re
@@ -89,6 +90,9 @@ class User(BaseModel, AbstractBaseUser, PermissionsMixin):
 
     # def get_discounts(self):
     #     return "\n".join([d.neme for d in self.discount.all()])
+
+    def __str__(self) -> str:
+        return f'{self.email}'
 
 
 class Address(BaseModel):
