@@ -1,5 +1,6 @@
 import uuid
 import os
+import re
 
 from django.contrib.auth.base_user import BaseUserManager
 from django.conf import settings
@@ -17,17 +18,18 @@ def user_image_file_path(instance, filename: str):
 
 
 class UserManager(BaseUserManager):
-    def create_user(self, email=None, phone=None, first_name=None, last_name=None, password=None, **extra_fields):
+    def create_user(self, email=None, password=None, **extra_fields):
         """create and save new user"""
-        print(extra_fields)
+
         if not email:
             raise ValueError('ایمیل اجباری است')
-        user = self.model(email=self.normalize_email(email), 
-                          phone=phone, 
-                          first_name=first_name, 
-                          last_name=last_name,
-                          **extra_fields,
-                          )
+        
+        pattern = r'^09[0-9]{9}$'        
+        if extra_fields.get('phone') and not re.match(pattern, extra_fields.get('phone')):
+            raise ValueError('فرمت تلفن اشتباه است')
+            
+        user = self.model(email=self.normalize_email(email), **extra_fields)
+        
         user.set_password(password)
         user.role = 'c'
         user.save(using=self._db)
@@ -62,9 +64,9 @@ class User(BaseModel, AbstractBaseUser, PermissionsMixin):
 
     USER_ROLE = (('a', 'ادمین'), ('o', 'ناظر'), ('c', 'مشتری'))
     email = models.EmailField(verbose_name='ایمیل', max_length=255, unique=True)
-    phone = models.CharField(verbose_name='شماره تلفن', max_length=11)
-    first_name = models.CharField(verbose_name='نام', max_length=64)
-    last_name = models.CharField(verbose_name='نام خانوادگی', max_length=64)
+    phone = models.CharField(verbose_name='شماره تلفن', max_length=11, null=True)
+    first_name = models.CharField(verbose_name='نام', max_length=64, null=True)
+    last_name = models.CharField(verbose_name='نام خانوادگی', max_length=64, null=True)
     is_active = models.BooleanField(verbose_name='فعال', default=False)
     is_staff = models.BooleanField(verbose_name='کارمند', default=False)
     role = models.CharField(verbose_name='نقش کاربر', choices=USER_ROLE, max_length=1)
