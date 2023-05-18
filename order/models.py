@@ -60,7 +60,7 @@ class Order(BaseModel):
         ('5', 'ارسال ترمینال'),
         ('6', 'ارسال پیک'),
     )
-    status = models.CharField(choices=ORDER_STATUS, max_length=1, verbose_name='وضعیت')
+    status = models.CharField(choices=ORDER_STATUS, max_length=1, verbose_name='وضعیت', default='1')
     shipping = models.CharField(choices=SHIPPING_METHOD, max_length=1, verbose_name='روش ارسال')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     address = models.ForeignKey(Address, on_delete=models.CASCADE)
