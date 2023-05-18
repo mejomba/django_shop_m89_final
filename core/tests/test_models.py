@@ -20,28 +20,28 @@ def test_discount(extra):
 
 class UserModelTest(TestCase):
     
+    def setUp(self) -> None:
+        self.required = ('test@MaiL.CoM', 'Test1234')
+        self.extra = extra = {'phone': '09112345678', 
+                            'first_name': 'mojtaba', 
+                            'last_name': 'aminzadeh'}
     def test_create_user_with_complet_data(self):
         
-        extra = {'phone': '09112345678', 
-                'first_name': 'mojtaba', 
-                'last_name': 'aminzadeh'}
-        
-        user = test_user(extra=extra)
+        user = test_user(extra=self.extra)
         
         self.assertEqual(user.email, 'test@mail.com')
-        self.assertEqual(user.phone, extra['phone'])
-        self.assertEqual(user.first_name, extra['first_name'])
-        self.assertEqual(user.last_name, extra['last_name'])
+        self.assertEqual(user.phone, self.extra['phone'])
+        self.assertEqual(user.first_name, self.extra['first_name'])
+        self.assertEqual(user.last_name, self.extra['last_name'])
         self.assertEqual(user.role, 'c')
         self.assertFalse(user.is_active)
         self.assertTrue(user.check_password('Test1234'))
         
         
     def test_email_normalize(self):
-        required = ('test@MaiL.CoM', 'Test1234')
-        user = test_user(*required)
+        user = test_user(email='test@MaiL.COm')
         
-        self.assertEqual(user.email, required[0].lower())
+        self.assertEqual(user.email, 'test@mail.com')
         
     def test_create_user_invalid_email(self):
         """Test user with empty email"""
@@ -51,24 +51,23 @@ class UserModelTest(TestCase):
         self.assertEqual(str(invalid_mail.exception), 'ایمیل اجباری است')
     
     def test_user_fullname_property(self):
-        extra = {'first_name': 'mojtaba', 'last_name': 'aminzadeh'}
-        user = test_user(extra=extra)
+        user = test_user(extra=self.extra)
         self.assertEqual(user.full_name, 'mojtaba aminzadeh')
         
     def test_create_user_invalid_phone(self):
         """Test create user with invalid phone number"""
         
         with self.assertRaises(ValueError):
-            get_user_model().objects.create_user('test@mail.com', 'Test1234', phone='1')
+            get_user_model().objects.create_user(phone='1')
             
         with self.assertRaises(ValueError):
-            get_user_model().objects.create_user('test@mail.com', 'Test1234', phone='091123456789')
+            get_user_model().objects.create_user(phone='091123456789')
         
         with self.assertRaises(ValueError):
-            get_user_model().objects.create_user('test@mail.com', 'Test1234', phone='0911234567a')
+            get_user_model().objects.create_user(phone='0911234567a')
             
     def test_create_superuser(self):
-        user = get_user_model().objects.create_superuser('test@mail.com', 'Test1234')
+        user = get_user_model().objects.create_superuser(*self.required)
         
         self.assertTrue(user.is_superuser)
         self.assertTrue(user.is_staff)
@@ -83,8 +82,7 @@ class UserModelTest(TestCase):
     def test_user_phone_exist(self):
         """Test user with exist phone (maybe not compatible with postgresql)"""
         
-        extra = {'phone': '09112345678'}
-        user = test_user(extra=extra)
+        user = test_user(extra=self.extra)
         
         with self.assertRaises(IntegrityError):
             new_user = get_user_model().objects.create_user('new@mail.com', 'Test1234', phone=user.phone)
@@ -139,4 +137,4 @@ class DiscountModelTest(TestCase):
         self.extra.pop('percent')
         self.extra.pop('mablagh')
         with self.assertRaises(IntegrityError):
-            discount = Discount.objects.create(name='test1', code='1234', **self.extra)
+            Discount.objects.create(name='test1', code='1234', **self.extra)
