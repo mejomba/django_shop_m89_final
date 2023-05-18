@@ -1,0 +1,109 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block custom_css %}
+<link href="{% static 'core/css/profile.css' %}" rel="stylesheet">
+{% endblock %}
+
+
+
+
+{% block content %}
+{% comment %} <section class="d-flex">
+    <div class="panel-width" id="side-panel">
+        <!-- ============ SIDE PANEL OPEN-CLOSE ============ -->
+        <div class="bg-slate-800 position-fixed top-16 bottom-0 inner-panel-width z-10">
+            <div class="position-absolute left-[-2.1rem] profile-side-panel-position-button top-[40%]" id="side-panel-button">
+                <a href="#" id="side-button">
+                    <span>
+                        <ion-icon name="chevron-back-outline"class="text-lg bg-zinc-400 p-2 rounded-l hover:bg-zinc-300 transition duration-300"></ion-icon>
+                        <span class="position-absolute left-2 top-[-1.2rem] px-3 py-2 badge badge-warning">1</span><!--left-->
+                    </span>
+                    <span class="hide">
+                        <ion-icon name="chevron-forward-outline" class="text-lg bg-zinc-400 p-2 rounded-r hover:bg-zinc-300 transition duration-300">
+                        </ion-icon>
+                    </span>
+                    <!--right-->
+                </a>
+            </div>
+            <!-- ============ SIDE PANEL ITEMS ============ -->
+            <ul class="overflow-hidden bg-slate-800 text-gray-100">
+                <li class="pr-2 pt-2 d-flex justify-content-between bg-slate-900 border-b-4 border-b-slate-600">
+                    <!-- <ion-icon name="battery-half-outline" class="self-center ml-2"></ion-icon> -->
+                    <img src="../../static/base/images/enamad.jpg" alt="" class="w-12 h-12 border-2 p-0.5 border-orange-500 rounded-full self-center ">
+                    <a href="#" class="w-full pr-2 py-3 text-white">مجتبی امین زاده سرایدشتی</a>
+                </li>
+                <li class="pr-2 d-flex justify-content-between hover:bg-slate-700">
+                    <ion-icon name="battery-half-outline" class="self-center ml-2"></ion-icon>
+                    <a href="#" class="w-full pr-2 py-3 text-white"> اطلاعات حساب کاربری</a>
+                </li>
+                <li class="pr-2 d-flex justify-content-between hover:bg-slate-700">
+                    <ion-icon name="battery-half-outline" class="self-center ml-2"></ion-icon>
+                    <a href="#" class="w-full pr-2 py-3 text-white"> سفارش ها</a>
+                </li>                
+                <li class="pr-2 d-flex justify-content-between hover:bg-slate-700">
+                    <ion-icon name="battery-half-outline" class="self-center ml-2"></ion-icon>
+                    <a href="#" class="w-full pr-2 py-3 text-white"> علاقه مندی ها</a>
+                </li>
+                <li class="pr-2 d-flex justify-content-between hover:bg-slate-700">
+                    <ion-icon name="battery-half-outline" class="self-center ml-2"></ion-icon>
+                    <a href="#" class="w-full pr-2 py-3 text-white"> دید گاه ها
+                        <span class="badge badge-warning mr-1">2</span>
+                    </a>
+                </li>
+                <li class="pr-2 d-flex justify-content-between hover:bg-slate-700">
+                    <ion-icon name="battery-half-outline" class="self-center ml-2"></ion-icon>
+                    <a href="#" class="w-full pr-2 py-3 text-white"> آدرس ها</a>
+                </li>
+                
+                
+            </ul>
+        
+            <ul class="text-gray-100 position-absolute bottom-0 w-full overflow-hidden">
+                <li class="pr-2 d-flex justify-content-between hover:text-red-500 hover:bg-slate-700 border-t-4 border-t-slate-600">
+                    <ion-icon name="power-outline" class="self-center ml-2"></ion-icon>
+                    <a href="#" class="w-full py-3 hover:text-red-500"> خروج از حساب </a>
+                </li>
+            </ul>
+        </div>
+    </div> {% endcomment %}
+
+    {% include 'base/profile_panel.html' %}
+    <div class="w-100">
+        <div class="container my-5">
+            <!-- <h2 class="text-center p-4">خرید های شما</h2> -->
+            <div class="row">
+                
+                <div class="col-12 border-2 border-orange-500 p-2 my-3 rounded">
+                    <!-- card -->
+                    
+                    {% include 'core/order_history.html' %}
+
+                </div>                
+
+                <div class="col-12 border-2 border-orange-500 p-2 my-3 rounded">
+                    <!-- card -->
+                    data
+                </div>                
+
+                <div class="col-12 border-2 border-orange-500 p-2 my-3 rounded">
+                    <!-- card -->
+                    data
+                </div>                
+
+            </div>            
+        </div>
+    </div>
+</section>
+
+
+
+
+
+{% endblock %}
+
+{% block custom_js %} 
+<script src="{% static 'core/js/profile.js' %}"></script>
+<script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+{% endblock %}

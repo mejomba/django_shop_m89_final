@@ -1,0 +1,46 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+
+{% block custom_css %}
+    <link href="{% static 'core/css/register.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+  <div class="login-wrapper my-5">
+    <form action="" class="form mt-5">
+      <img src="../image/login/avatar.png" alt="">
+      <h2 class="text-warning">فرم ثبت نام</h2>
+      <div class="input-group">
+        <input type="text" name="firstname" id="firstname" required class="text-right">
+        <label for="firstname">نام</label>
+      </div>
+      <div class="input-group">
+        <input type="text" name="lastname" id="lastname" required class="text-right">
+        <label for="lastname">نام خانوادگی</label>
+      </div>
+      <div class="input-group">
+        <input type="text" name="loginUser" id="loginUser" required>
+        <label for="loginUser">شماره تلفن</label>
+      </div>
+      <div class="input-group">
+        <input type="password" name="loginPassword" id="loginPassword" required>
+        <label for="loginPassword">گذرواژه</label>
+      </div>
+      <div class="input-group">
+        <input type="email" name="registerEmail" id="registerEmail" required>
+        <label for="registerEmail">ایمیل</label>
+      </div>
+      
+      <div class="text-center mt-2">
+        <input type="submit" value="ثبت نام" class="btn btn-warning w-100">
+      </div>
+      
+      <div class="d-flex justify-content-around mt-4">
+        <span>قبلا ثبت نام کرده اید</span>
+        <a href="login.html" class="text-success">وارد شوید</a><br>
+      </div>
+    </form>
+    
+  </div>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+
+{% block custom_css %}
+    <link href="{% static 'core/css/register.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+  <div class="login-wrapper my-5">
+    <form action="" class="form mt-5">
+      <img src="../image/login/avatar.png" alt="">
+      <h2 class="text-success">فرم ورود</h2>
+      <div class="input-group">
+        <input type="email" name="registerEmail" id="registerEmail" required>
+        <label for="registerEmail">ایمیل</label>
+      </div>
+      <div class="input-group">
+        <input type="password" name="loginPassword" id="loginPassword" required>
+        <label for="loginPassword">گذرواژه</label>
+      </div>
+      <input type="submit" value="ورود" class="btn btn-success w-100">
+      <div class="mt-4 d-flex justify-content-around">
+        <span>حساب کاربری ندارید؟ </span>
+        <a href="login.html" class="text-warning">ثبت نام کنید</a><br>
+      </div>
+    </form>
+
+    
+    
+  </div>
+{% endblock %}
