@@ -17,13 +17,19 @@ def user_image_file_path(instance, filename: str):
 
 
 class UserManager(BaseUserManager):
-    def create_user(self, email, password=None, **extra_fields):
+    def create_user(self, email=None, phone=None, first_name=None, last_name=None, password=None, **extra_fields):
         """create and save new user"""
         print(extra_fields)
         if not email:
             raise ValueError('ایمیل اجباری است')
-        user = self.model(email=self.normalize_email(email), **extra_fields)
+        user = self.model(email=self.normalize_email(email), 
+                          phone=phone, 
+                          first_name=first_name, 
+                          last_name=last_name,
+                          **extra_fields,
+                          )
         user.set_password(password)
+        user.role = 'c'
         user.save(using=self._db)
 
         return user
