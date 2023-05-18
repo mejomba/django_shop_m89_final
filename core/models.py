@@ -64,7 +64,7 @@ class User(BaseModel, AbstractBaseUser, PermissionsMixin):
 
     USER_ROLE = (('a', 'ادمین'), ('o', 'ناظر'), ('c', 'مشتری'))
     email = models.EmailField(verbose_name='ایمیل', max_length=255, unique=True)
-    phone = models.CharField(verbose_name='شماره تلفن', max_length=11, null=True)
+    phone = models.CharField(verbose_name='شماره تلفن', max_length=11, unique=True, null=True)
     first_name = models.CharField(verbose_name='نام', max_length=64, null=True)
     last_name = models.CharField(verbose_name='نام خانوادگی', max_length=64, null=True)
     is_active = models.BooleanField(verbose_name='فعال', default=False)

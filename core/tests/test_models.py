@@ -1,7 +1,12 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 
-from django.contrib.auth.models import BaseUserManager
+
+
+def test_user(email='test@mail.com', password='Test1234'):
+    return get_user_model(email, password)
+
+
 class ModelTest(TestCase):
     
     def test_create_user_with_correct_data(self):
@@ -63,4 +68,6 @@ class ModelTest(TestCase):
         self.assertTrue(user.is_staff)
         self.assertTrue(user.is_active)
         
-            
+    def test_user_email_exist(self):
+        user = test_user()
+        
