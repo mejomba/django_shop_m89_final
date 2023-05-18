@@ -1,49 +1,36 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
+from django.db.utils import IntegrityError
 
 
-
-def test_user(email='test@mail.com', password='Test1234'):
-    return get_user_model(email, password)
+def test_user(email='test@mail.com', password='Test1234', extra={}):
+    return get_user_model().objects.create_user(email, password, **extra)
 
 
 class ModelTest(TestCase):
     
-    def test_create_user_with_correct_data(self):
+    def test_create_user_with_complet_data(self):
         
-        email, password, phone, first_name, last_name = \
-            'test@mail.com', 'Test1234', '09112345678', 'mojtaba', 'aminzadeh'
+        extra = {'phone': '09112345678', 
+                'first_name': 'mojtaba', 
+                'last_name': 'aminzadeh'}
         
-        user = get_user_model().objects.create_user(
-            email = email,
-            password = password,
-            phone = phone,
-            first_name = first_name,
-            last_name = last_name
-        )
+        user = test_user(extra=extra)
         
-        self.assertEqual(user.email, email)
-        self.assertEqual(user.phone, phone)
-        self.assertEqual(user.first_name, first_name)
-        self.assertEqual(user.last_name, last_name)
+        self.assertEqual(user.email, 'test@mail.com')
+        self.assertEqual(user.phone, extra['phone'])
+        self.assertEqual(user.first_name, extra['first_name'])
+        self.assertEqual(user.last_name, extra['last_name'])
         self.assertEqual(user.role, 'c')
         self.assertFalse(user.is_active)
-        self.assertTrue(user.check_password(password))
+        self.assertTrue(user.check_password('Test1234'))
         
         
     def test_email_normalize(self):
-        email, password, phone, first_name, last_name = \
-            'test@MaiL.CoM', 'Test1234', None, None, None
+        required = ('test@MaiL.CoM', 'Test1234')
+        user = test_user(*required)
         
-        user = get_user_model().objects.create_user(
-            email = email,
-            password = password,
-            phone = phone,
-            first_name = first_name,
-            last_name = last_name
-        )
-        
-        self.assertEqual(user.email, email.lower())
+        self.assertEqual(user.email, required[0].lower())
         
     def test_create_user_invalid_email(self):
         """Test user with empty email"""
@@ -51,7 +38,12 @@ class ModelTest(TestCase):
             get_user_model().objects.create_user('', )
             
         self.assertEqual(str(invalid_mail.exception), 'ایمیل اجباری است')
-            
+    
+    def test_user_fullname_property(self):
+        extra = {'first_name': 'mojtaba', 'last_name': 'aminzadeh'}
+        user = test_user(extra=extra)
+        self.assertEqual(user.full_name, 'mojtaba aminzadeh')
+        
     def test_create_user_invalid_phone(self):
         """Test create user with invalid phone number"""
         
@@ -60,6 +52,9 @@ class ModelTest(TestCase):
             
         with self.assertRaises(ValueError):
             get_user_model().objects.create_user('test@mail.com', 'Test1234', phone='091123456789')
+        
+        with self.assertRaises(ValueError):
+            get_user_model().objects.create_user('test@mail.com', 'Test1234', phone='0911234567a')
             
     def test_create_superuser(self):
         user = get_user_model().objects.create_superuser('test@mail.com', 'Test1234')
@@ -69,5 +64,17 @@ class ModelTest(TestCase):
         self.assertTrue(user.is_active)
         
     def test_user_email_exist(self):
+        """Test user with exist email (maybe not compatible with postgresql)"""
         user = test_user()
+        with self.assertRaises(IntegrityError):
+            new_user = get_user_model().objects.create_user(user.email, 'Test1234')
+            
+    def test_user_phone_exist(self):
+        """Test user with exist phone (maybe not compatible with postgresql)"""
+        
+        extra = {'phone': '09112345678'}
+        user = test_user(extra=extra)
+        
+        with self.assertRaises(IntegrityError):
+            new_user = get_user_model().objects.create_user('new@mail.com', 'Test1234', phone=user.phone)
         
