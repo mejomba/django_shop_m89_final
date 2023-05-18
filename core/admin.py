@@ -6,7 +6,7 @@ from . import models
 
 class CustomUserAdmin(UserAdmin):
     ordering = ('id',)
-    list_display = ['email', 'first_name', 'last_name']
+    list_display = ['email', 'first_name', 'last_name', 'jlast_update']
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
         (_('Personal Info'), {'fields': ('first_name', 'last_name', 'profile_image')}),
@@ -35,6 +35,7 @@ class CustomUserAdmin(UserAdmin):
 
 class AdminAddress(admin.ModelAdmin):
     fields = ('country', 'province', 'city', 'street', 'zip_code', 'pelak', 'full_address', 'user', 'is_deleted')
+    list_display = ['country', 'province', 'city', 'jlast_update']
 
     def get_queryset(self, request):
         return self.model.objects.filter(is_deleted=False)

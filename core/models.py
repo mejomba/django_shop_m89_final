@@ -10,6 +10,8 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.utils import timezone
 
+from extension.utils import to_jalali
+
 
 def user_image_file_path(instance, filename: str):
     """generate file path for user profile image"""
@@ -58,6 +60,10 @@ class BaseModel(models.Model):
 
     class Meta:
         abstract = True
+        
+    def jlast_update(self):
+        return to_jalali(self.last_update)    
+    jlast_update.short_description = 'آخرین به روز رسانی'
 
 
 class User(BaseModel, AbstractBaseUser, PermissionsMixin):
