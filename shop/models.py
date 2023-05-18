@@ -50,7 +50,7 @@ class Product(BaseModel):
     discount = models.ManyToManyField(Discount, related_name='product_discount_related_name', null=True, blank=True, verbose_name='تخفیف')
     category = models.ManyToManyField('Category', related_name='product_category_related_name',verbose_name='دسته بندی')
     tag = models.ManyToManyField('Tag', related_name='product_category_related_name')
-    magic_sale = models.ForeignKey('MagicSale', on_delete=models.CASCADE, verbose_name='حراج شگفت انگیز')
+    magic_sale = models.ForeignKey('MagicSale', on_delete=models.CASCADE, verbose_name='حراج شگفت انگیز', null=True)
 
     class Meta:
         verbose_name = 'محصول'
