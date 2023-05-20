@@ -8,6 +8,7 @@ from django.db import models
 from django.utils.text import slugify
 
 from core.models import BaseModel, Discount
+from core import utils
 
 
 def post_image_file_path(instance, filename: str):
@@ -50,7 +51,7 @@ class Product(BaseModel):
     discount = models.ManyToManyField(Discount, related_name='product_discount_related_name', null=True, blank=True, verbose_name='تخفیف')
     category = models.ManyToManyField('Category', related_name='product_category_related_name',verbose_name='دسته بندی')
     tag = models.ManyToManyField('Tag', related_name='product_category_related_name')
-    magic_sale = models.ForeignKey('MagicSale', on_delete=models.CASCADE, verbose_name='حراج شگفت انگیز', null=True, blank=True)
+    magic_sale = models.ForeignKey('MagicSale', on_delete=models.SET_NULL, verbose_name='حراج شگفت انگیز', null=True, blank=True, default=None)
 
     class Meta:
         verbose_name = 'محصول'
@@ -63,18 +64,25 @@ class Product(BaseModel):
 
     # @property
     def get_price_apply_tax(self):
-        return self.price + (self.price * (self.tax / 100))
+        price = self.get_price_apply_discount()
+        return price + (price * (self.tax / 100))
     get_price_apply_tax.short_description = 'قیمت پس از مالیات'
 
-    # TODO "calculate price with apply all discounts"
-    # def get_price_apply_discount(self):
-    #     discounts = self.discount.objects.all()
-    #     for discount in discounts:
-    #         if discount.percent and discount.mablagh:
-    #             pass
-    #
-    #     return ''
-    # get_price_apply_discount.short_description = 'قیمت پس از تخفیف'
+    def get_price_apply_discount(self):
+        price = self.price
+        sum_mablagh, sum_percent = utils.discount_solver(self)
+
+        if sum_mablagh >= price or sum_percent >= 100:
+            return 0
+
+        price -= (price * (sum_percent/100))
+        price -= sum_mablagh
+
+        if price <= 0:
+            return 0
+
+        return price
+    get_price_apply_discount.short_description = 'قیمت پس از تخفیف'
 
     def __str__(self):
         return f'{self.name}'
