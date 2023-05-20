@@ -50,7 +50,7 @@ class Product(BaseModel):
     discount = models.ManyToManyField(Discount, related_name='product_discount_related_name', null=True, blank=True, verbose_name='تخفیف')
     category = models.ManyToManyField('Category', related_name='product_category_related_name',verbose_name='دسته بندی')
     tag = models.ManyToManyField('Tag', related_name='product_category_related_name')
-    magic_sale = models.ForeignKey('MagicSale', on_delete=models.CASCADE, verbose_name='حراج شگفت انگیز', null=True)
+    magic_sale = models.ForeignKey('MagicSale', on_delete=models.CASCADE, verbose_name='حراج شگفت انگیز', null=True, blank=True)
 
     class Meta:
         verbose_name = 'محصول'
@@ -120,7 +120,7 @@ class Comment(BaseModel):
     content = models.TextField(verbose_name='متن نظر', max_length=500)
     rating = models.PositiveIntegerField(verbose_name='امتیاز', validators=[MinValueValidator(1), MaxValueValidator(5)])
 
-    parent_comment = models.ForeignKey('self', on_delete=models.CASCADE)
+    parent_comment = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
     product = models.ForeignKey('Product', on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 

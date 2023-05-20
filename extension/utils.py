@@ -1,6 +1,7 @@
 from . import myjalali
 from django.utils import timezone
 
+
 def to_persian_number(mystr):
 	number = {
 		"0": "۰",
@@ -20,6 +21,7 @@ def to_persian_number(mystr):
 
 	return mystr
 
+
 def to_jalali(time):
 	time = timezone.localtime(time)
 	G_time_string = '{}-{}-{}'.format(time.year, time.month, time.day)
@@ -30,9 +32,11 @@ def to_jalali(time):
 	jtime_list = list(jtime)
 
 	for i, j in enumerate(j_month):
+		print(i, j)
+		print(jtime_list)
 		if jtime_list[1] == i + 1:
 			jtime_list[1] = j_month[i]
-	output =  '{} {} {} ساعت {}:{}'.format(jtime_list[2], jtime_list[1], jtime_list[0], time.strftime('%H'), time.strftime('%M'))
+	output = '{} {} {} ساعت {}:{}'.format(jtime_list[2], jtime_list[1], jtime_list[0], time.strftime('%H'), time.strftime('%M'))
 	
 	# convert number to persian
 	output = to_persian_number(output)

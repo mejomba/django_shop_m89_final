@@ -9,6 +9,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.utils import timezone
+from django.utils.html import format_html
 
 from extension.utils import to_jalali
 
@@ -93,6 +94,12 @@ class User(BaseModel, AbstractBaseUser, PermissionsMixin):
         if (f := self.first_name) and (l := self.last_name):
             return f'{f} {l}'
         return f'{self.email}'
+
+    def display_profile_image(self):
+        if self.profile_image:
+            return format_html('<img width=64 src={}>'.format(self.profile_image.url))
+
+    display_profile_image.short_description = 'تصویر'
 
     # def get_discounts(self):
     #     return "\n".join([d.neme for d in self.discount.all()])

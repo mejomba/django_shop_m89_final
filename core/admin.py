@@ -5,14 +5,14 @@ from . import models
 
 
 class CustomUserAdmin(UserAdmin):
-    ordering = ('id',)
-    list_display = ['email', 'first_name', 'last_name', 'jlast_update']
+    ordering = ('-id',)
+    list_display = ['email', 'first_name', 'last_name', 'jlast_update', 'display_profile_image']
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
         (_('Personal Info'), {'fields': ('first_name', 'last_name', 'profile_image')}),
         (
             _('Permissions'),
-            {'fields': ('is_active', 'is_staff', 'is_superuser', 'is_deleted', 'discount')}
+            {'fields': ('is_active', 'is_staff', 'is_superuser', 'is_deleted', 'discount', 'role')}
         ),
         (_('Important dates'), {'fields': ('last_login',)})
     )
@@ -20,9 +20,12 @@ class CustomUserAdmin(UserAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'password1', 'password2')
+            'fields': ('email', 'password1', 'password2',)
         }),
     )
+
+    list_filter = ('role', 'is_active', 'is_staff')
+    search_fields = ('email', 'first_name')
 
     def get_queryset(self, request):
         return self.model.objects.filter(is_deleted=False)
