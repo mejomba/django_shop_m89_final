@@ -64,8 +64,7 @@ class Order(BaseModel):
     shipping = models.CharField(choices=SHIPPING_METHOD, max_length=1, verbose_name='روش ارسال')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     address = models.ForeignKey(Address, on_delete=models.CASCADE)
-    time_for_pay = models.DateTimeField(verbose_name='زمال پرداخت',
-                                        default=timezone.now() + datetime.timedelta(minutes=30))
+    time_for_pay = models.DateTimeField(verbose_name='زمال مجاز برای پرداخت')
 
     class Meta:
         verbose_name = 'سفارش'
