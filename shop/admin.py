@@ -88,3 +88,6 @@ class CommentAdmin(admin.ModelAdmin):
 
     class Meta:
         model = models.WishList
+
+
+admin.site.register(models.MagicSale)
