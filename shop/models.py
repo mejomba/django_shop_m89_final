@@ -62,10 +62,13 @@ class Product(BaseModel):
             self.slug = slugify(self.name)
         return super().save(*args, **kwargs)
 
-    # @property
+    def get_final_price(self):
+        return self.get_price_apply_tax()
+    get_final_price.short_description = 'قیمت نهایی'
+    
     def get_price_apply_tax(self):
         price = self.get_price_apply_discount()
-        return price + (price * (self.tax / 100))
+        return int(price + (price * (self.tax / 100)))
     get_price_apply_tax.short_description = 'قیمت پس از مالیات'
 
     def get_price_apply_discount(self):
