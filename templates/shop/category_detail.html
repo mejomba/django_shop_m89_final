@@ -1,27 +1,24 @@
 {% extends 'base/base.html' %}
+{% load custom_tags %}
 
 {% block content %}
 <div class="container-fluid mt-10">
     <div class="row">
-    <div class="col-12 col-md-3 col-lg-2 bg-warning">
-        <div class=" fixed-top mt-10 pt-5">
-            <ul>
-                <li class="py-2">
+    <div class="col-12 col-md-3 col-lg-2 ">
+        <div class="mt-10 position-relative">
+            
+            <ul class="list-group">
+                <li class="py-2 list-group-item list-group-item-action">
                     <a href="#" class="">آیتم فیلتر</a>
                 </li>
-                <li class="py-2">
+                <li class="py-2 list-group-item list-group-item-action">
                     <a href="#" class="">آیتم فیلتر</a>
                 </li>
-                <li class="py-2">
-                    <a href="#" class="">آیتم فیلتر</a>
-                </li>
-                <li class="py-2">
-                    <a href="#" class="">آیتم فیلتر</a>
-                </li>
-                <li class="py-2">
+                <li class="py-2 list-group-item list-group-item-action">
                     <a href="#" class="">آیتم فیلتر</a>
                 </li>
             </ul>
+        
         </div>
     </div>
     <div class="col-12 col-md-9 col-lg-10">
@@ -33,41 +30,7 @@
             <div class="row">
                 <!-- product -->
                 {% for product in products %}
-                <div class="col-sm-6 col-md-6 col-lg-4 col-xl-3 mb-3">
-                    <!-- card -->
-                    <div class="card">
-                        <img class="card-img-top" src="{{ product.thumbnail.url }}" alt="Card image cap" style="max-height: 200px;">
-                        <div class="card-body">
-                          <h5 class="card-title">{{ product.name }}</h5>
-                          <p class="card-text">{{ product.meta_description }}</p>
-                        </div>
-
-                        <div class="m-2">
-                            <span>قیمت</span>
-                            <span>{{ product.price }}</span>
-                            <span>تومان</span>
-                        </div>
-                        <div class="m-2">
-                            <span>قیمت با تخفیف</span>
-                            <span>{{ product.get_final_price }}</span>
-                            <span>تومان</span>
-                        </div>
-                        <div class="m-2">
-                          {% for ca in product.category.all %}
-                            <span class="badge badge-warning">
-                              <a href="{% url 'shop:category_detail' ca.id %}">
-                                {{ca}}
-                              </a>
-                            </span>
-                          {% endfor %}
-                      </div>
-
-                        <div class="card-footer d-flex justify-content-around">
-                            <a href="{% url 'shop:product_detail' product.id %}" class="btn btn-primary">مشاهده</a>
-                            <a href="" class="btn btn-success">افزودن به سبد</a>
-                        </div>
-                    </div>
-                </div>
+                    {% show_single_product product %}
                 {% endfor %}
             </div>
                     <!-- pagination -->
