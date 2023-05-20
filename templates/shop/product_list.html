@@ -12,97 +12,37 @@
         <div class="container-fluid my-5">
             <h2 class="text-center p-4">لیست محصولات</h2>
             <div class="row">
-        
+                <!-- product -->
+                {% for product in products %}
                 <div class="col-sm-6 col-md-6 col-lg-4 col-xl-3 mb-3">
                     <!-- card -->
                     <div class="card">
-                        <img class="card-img-top" src="../../uploads/post/2023-05-16/027ab6d4-141d-470c-8910-80a776ee7ac2.png" alt="Card image cap">
+                        <img class="card-img-top" src="{{ product.thumbnail.url }}" alt="Card image cap" style="max-height: 200px;">
                         <div class="card-body">
-                          <h5 class="card-title">عنوان محصول این است </h5>
-                          <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                          <h5 class="card-title">{{ product.name }}</h5>
+                          <p class="card-text">{{ product.meta_description }}</p>
                         </div>
-        
+
                         <div class="m-2">
                             <span>قیمت</span>
-                            <span>123456</span>
+                            <span>{{ product.price }}</span>
                             <span>تومان</span>
                         </div>
-        
+                        <div class="m-2">
+                            <span>قیمت با تخفیف</span>
+                            <span>{{ product.get_price_apply_discount }}</span>
+                            <span>تومان</span>
+                        </div>
+
                         <div class="card-footer d-flex justify-content-around">
                             <a href="" class="btn btn-primary">مشاهده</a>
                             <a href="" class="btn btn-success">افزودن به سبد</a>
                         </div>
-                    </div>                
+                    </div>
                 </div>
-        
-                <div class="col-sm-6 col-md-6 col-lg-4 col-xl-3 mb-3">
-                    <!-- card -->
-                    <div class="card">
-                        <img class="card-img-top" src="../../uploads/post/2023-05-16/027ab6d4-141d-470c-8910-80a776ee7ac2.png" alt="Card image cap">
-                        <div class="card-body">
-                          <h5 class="card-title">عنوان محصول این است </h5>
-                          <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                        </div>
-        
-                        <div class="m-2">
-                            <span>قیمت</span>
-                            <span>123456</span>
-                            <span>تومان</span>
-                        </div>
-        
-                        <div class="card-footer d-flex justify-content-around">
-                            <a href="" class="btn btn-primary">مشاهده</a>
-                            <a href="" class="btn btn-success">افزودن به سبد</a>
-                        </div>
-                    </div>                
-                </div>
-        
-                <div class="col-sm-6 col-md-6 col-lg-4 col-xl-3 mb-3">
-                    <!-- card -->
-                    <div class="card">
-                        <img class="card-img-top" src="../../uploads/post/2023-05-16/027ab6d4-141d-470c-8910-80a776ee7ac2.png" alt="Card image cap">
-                        <div class="card-body">
-                          <h5 class="card-title">عنوان محصول این است </h5>
-                          <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                        </div>
-        
-                        <div class="m-2">
-                            <span>قیمت</span>
-                            <span>123456</span>
-                            <span>تومان</span>
-                        </div>
-        
-                        <div class="card-footer d-flex justify-content-around">
-                            <a href="" class="btn btn-primary">مشاهده</a>
-                            <a href="" class="btn btn-success">افزودن به سبد</a>
-                        </div>
-                    </div>                
-                </div>
-        
-                <div class="col-sm-6 col-md-6 col-lg-4 col-xl-3 mb-3">
-                    <!-- card -->
-                    <div class="card">
-                        <img class="card-img-top" src="../../uploads/post/2023-05-16/027ab6d4-141d-470c-8910-80a776ee7ac2.png" alt="Card image cap">
-                        <div class="card-body">
-                          <h5 class="card-title">عنوان محصول این است </h5>
-                          <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                        </div>
-        
-                        <div class="m-2">
-                            <span>قیمت</span>
-                            <span>123456</span>
-                            <span>تومان</span>
-                        </div>
-        
-                        <div class="card-footer d-flex justify-content-around">
-                            <a href="" class="btn btn-primary">مشاهده</a>
-                            <a href="" class="btn btn-success">افزودن به سبد</a>
-                        </div>
-                    </div>                
-                </div>
-        
+                {% endfor %}
             </div>
-            
+                    <!-- pagination -->
             <nav aria-label="Page navigation" class="mt-10">
                 <ul class="pagination pagination-lg justify-content-center ltr">
                   <li class="page-item disabled">
@@ -116,7 +56,6 @@
                   </li>
                 </ul>
               </nav>
-    </div>
 </div>
 </div>
 
