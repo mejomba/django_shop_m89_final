@@ -1,10 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'base/base.html' %}
 
-</body>
-</html>
+{% block content %}
+<div class="container-fluid mt-10">
+    <div class="row">
+        <div class="col-md-4 bg-success">right</div>
+        <div class="col-md-5 bg-warning">middle</div>
+        <div class="col-md-3 bg-danger d-fixe">left</div>
+    </div>
+</div>
+{% endblock content %}

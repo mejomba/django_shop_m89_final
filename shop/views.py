@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.views import generic
 
 from . import models
@@ -17,5 +17,30 @@ def landing_page(request):
 
 class ProductListView(generic.ListView):
     model = models.Product
-    template_name = 'product_list.html'
+    template_name = 'shop/product_list.html'
     context_object_name = 'products'
+
+
+class ProductDetailView(generic.DetailView):
+    model = models.Product
+    template_name = 'shop/product_detail.html'
+    context_object_name = 'product'
+
+
+class CategoryListView(generic.ListView):
+    model = models.Category
+    template_name = 'shop/category_list.html'
+    context_object_name = 'categories'
+    
+
+class CategoryDetailView(generic.DetailView):
+    model = models.Category
+    template_name = 'shop/category_detail.html'
+    context_object_name = 'category'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        category = get_object_or_404(models.Category, pk=self.kwargs['pk'])
+        context["products"] = category.product_category_related_name.all()
+        return context
+    

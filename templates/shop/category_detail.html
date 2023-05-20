@@ -1,16 +1,35 @@
 {% extends 'base/base.html' %}
-{% load static %}
-
 
 {% block content %}
 <div class="container-fluid mt-10">
     <div class="row">
     <div class="col-12 col-md-3 col-lg-2 bg-warning">
-        filter
+        <div class=" fixed-top mt-10 pt-5">
+            <ul>
+                <li class="py-2">
+                    <a href="#" class="">آیتم فیلتر</a>
+                </li>
+                <li class="py-2">
+                    <a href="#" class="">آیتم فیلتر</a>
+                </li>
+                <li class="py-2">
+                    <a href="#" class="">آیتم فیلتر</a>
+                </li>
+                <li class="py-2">
+                    <a href="#" class="">آیتم فیلتر</a>
+                </li>
+                <li class="py-2">
+                    <a href="#" class="">آیتم فیلتر</a>
+                </li>
+            </ul>
+        </div>
     </div>
     <div class="col-12 col-md-9 col-lg-10">
         <div class="container-fluid my-5">
-            <h2 class="text-center p-4">لیست محصولات</h2>
+            <h2 class="text-center p-4">
+                لیست محصولات
+                <span class="badge badge-warning">{{ category }}</span>
+            </h2>
             <div class="row">
                 <!-- product -->
                 {% for product in products %}
@@ -30,12 +49,10 @@
                         </div>
                         <div class="m-2">
                             <span>قیمت با تخفیف</span>
-                            <span>{{ product.get_price_apply_discount }}</span>
+                            <span>{{ product.get_final_price }}</span>
                             <span>تومان</span>
                         </div>
                         <div class="m-2">
-                          {% comment %} {% for category in product.category.all %} {% endcomment %}
-                          {% comment %} {{ product.category.all|join:", " }} {% endcomment %}
                           {% for ca in product.category.all %}
                             <span class="badge badge-warning">
                               <a href="{% url 'shop:category_detail' ca.id %}">
@@ -43,8 +60,6 @@
                               </a>
                             </span>
                           {% endfor %}
-                          {% comment %} {{ category.code }} {% endcomment %}
-                          {% comment %} {% endfor %} {% endcomment %}
                       </div>
 
                         <div class="card-footer d-flex justify-content-around">
@@ -72,5 +87,5 @@
 </div>
 </div>
 
+
 {% endblock content %}
-    
