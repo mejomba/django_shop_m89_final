@@ -77,8 +77,8 @@ class User(BaseModel, AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField(verbose_name='نام خانوادگی', max_length=64, null=True)
     is_active = models.BooleanField(verbose_name='فعال', default=False)
     is_staff = models.BooleanField(verbose_name='کارمند', default=False)
-    role = models.CharField(verbose_name='نقش کاربر', choices=USER_ROLE, max_length=1)
-    profile_image = models.ImageField(verbose_name='تصویر پروفایل', upload_to=user_image_file_path, null=True, blank=True, default=f'{user_image_file_path}/no_image.png')
+    role = models.CharField(verbose_name='نقش کاربر', choices=USER_ROLE, max_length=1, default='c')
+    profile_image = models.ImageField(verbose_name='تصویر پروفایل', upload_to=user_image_file_path, null=True, blank=True, default=f'uploads/user/no_image.png')
 
     discount = models.ForeignKey('Discount', on_delete=models.SET_NULL, null=True, blank=True)
     objects = UserManager()
