@@ -69,7 +69,7 @@ class TagAdmin(admin.ModelAdmin):
 @admin.register(models.Comment)
 class CommentAdmin(admin.ModelAdmin):
 
-    fields = ('title',
+    fields = (
               'content',
               'rating',
               'parent_comment',

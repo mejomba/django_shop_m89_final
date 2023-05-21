@@ -130,7 +130,7 @@ class Comment(BaseModel):
     content = models.TextField(verbose_name='متن نظر', max_length=500)
     rating = models.PositiveIntegerField(verbose_name='امتیاز', validators=[MinValueValidator(1), MaxValueValidator(5)])
 
-    parent_comment = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
+    parent_comment = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='related_name')
     product = models.ForeignKey('Product', on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
@@ -139,7 +139,7 @@ class Comment(BaseModel):
         verbose_name_plural = 'نظر ها'
 
     def __str__(self):
-        return f'{self.title}'
+        return f'{self.content}'
 
 
 class MagicSale(BaseModel):
