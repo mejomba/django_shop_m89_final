@@ -32,8 +32,6 @@ def to_jalali(time):
 	jtime_list = list(jtime)
 
 	for i, j in enumerate(j_month):
-		print(i, j)
-		print(jtime_list)
 		if jtime_list[1] == i + 1:
 			jtime_list[1] = j_month[i]
 	output = '{} {} {} ساعت {}:{}'.format(jtime_list[2], jtime_list[1], jtime_list[0], time.strftime('%H'), time.strftime('%M'))
