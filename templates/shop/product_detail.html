@@ -4,11 +4,33 @@
 {% block content %}
 <div class="container-fluid mt-10">
     <div class="row">
-        <div class="col-md-4 bg-success">
-            {% show_image_gallery images %}
+        <div class="col-md-4">
+            {% show_image_gallery product.thumbnail images %}
         </div>
-        <div class="col-md-5 bg-warning">middle</div>
-        <div class="col-md-3 bg-danger d-fixe">left</div>
+        <div class="col-md-5 px-xl-3">
+            {% show_product_basic_info product %}
+        </div>
+        <div class="col-md-3 mt-xl-5">
+            {% show_product_action product %}
+        </div>
+    </div>
+    
+    <div class="row mt-5">
+        <div class="col-md-9">
+                {% show_product_full_info product %}
+        </div>
+        <div class="col-md-3 vh-100">
+            <div style="position: sticky; position: -webkit-sticky; left:0; top:100px;">
+                {% show_product_action product %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="mx-xl-5 col">
+            <h3 class="my-4">نطر کاربران</h3>
+            {% show_product_comments comments %}
+        </div>
     </div>
 </div>
 {% endblock content %}
