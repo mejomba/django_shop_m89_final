@@ -1,15 +1,15 @@
 from typing import Any, Dict
-from django.shortcuts import render, get_list_or_404
+from django.shortcuts import render, get_list_or_404, get_object_or_404
 from django.views import generic
 
 from . import models
 
 
 def landing_page(request):
-    return render(request, 'shop/landing_page.html', {})
+    # return render(request, 'shop/landing_page.html', {})
     # return render(request, 'core/register.html', {})
     # return render(request, 'core/login.html', {})
-    # return render(request, 'core/profile.html', {})
+    return render(request, 'core/profile.html', {})
     # return render(request, 'core/order_history.html', {}) # load in profile first view
     # return render(request, 'core/address.html', {})
     # return render(request, 'shop/discount_page.html', {})
@@ -30,6 +30,7 @@ class ProductDetailView(generic.DetailView):
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context['images'] = models.ProductImage.objects.filter(product=self.kwargs['pk'])
+        context['comments'] = models.Comment.objects.filter(product=self.kwargs['pk']).order_by('-create_at')
         return context
 
 
