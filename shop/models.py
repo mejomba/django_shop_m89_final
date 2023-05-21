@@ -127,7 +127,6 @@ class Tag(BaseModel):
 
 
 class Comment(BaseModel):
-    title = models.CharField(verbose_name='عنوان نظر', max_length=150)
     content = models.TextField(verbose_name='متن نظر', max_length=500)
     rating = models.PositiveIntegerField(verbose_name='امتیاز', validators=[MinValueValidator(1), MaxValueValidator(5)])
 
