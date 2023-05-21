@@ -1,9 +1,12 @@
 {% extends 'base/base.html' %}
+{% load custom_tags %}
 
 {% block content %}
 <div class="container-fluid mt-10">
     <div class="row">
-        <div class="col-md-4 bg-success">right</div>
+        <div class="col-md-4 bg-success">
+            {% show_image_gallery images %}
+        </div>
         <div class="col-md-5 bg-warning">middle</div>
         <div class="col-md-3 bg-danger d-fixe">left</div>
     </div>

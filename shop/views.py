@@ -1,4 +1,5 @@
-from django.shortcuts import render, get_object_or_404
+from typing import Any, Dict
+from django.shortcuts import render, get_list_or_404
 from django.views import generic
 
 from . import models
@@ -25,6 +26,11 @@ class ProductDetailView(generic.DetailView):
     model = models.Product
     template_name = 'shop/product_detail.html'
     context_object_name = 'product'
+    
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context['images'] = models.ProductImage.objects.filter(product=self.kwargs['pk'])
+        return context
 
 
 class CategoryListView(generic.ListView):
