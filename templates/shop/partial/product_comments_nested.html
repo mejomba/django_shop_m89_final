@@ -1,0 +1,33 @@
+
+{% for comment in comment.related_name.all %}
+<div class=" border rounded bg-white m-1">
+    <div class="d-flex justify-content-start align-items-center my-2 p-2">
+        <img src="{{comment.user.profile_image.url}}" alt="" class="rounded-circle" width="64px" height="64px">
+        {% if comment.user.get_fullname %}
+        <span class="mr-3">{{ comment.user.get_fullname }}</span>
+        {% else %}
+        <span class="mr-3">{{ comment.user.email }}</span>
+        {% endif %}
+        <span class="mr-3">{{comment.jlast_update}}</span>
+        <span class="mr-5">امتیاز:</span>
+        {% for star in "12345" %}
+            {% if star|add:"0" <= comment.rating %}
+            <ion-icon name="star"></ion-icon>
+            {% else %}
+            <ion-icon name="star-outline"></ion-icon>
+            {% endif %}
+        {% endfor %}
+        <span class="mr-1">{{ comment.rating }}</span>
+    </div>
+    <div class="">
+        <p class="py-4 px-3 mr-4">{{ comment.content }}</p>
+            <div class="text-left ml-5 my-2">
+                <a href="#" class="btn btn-primary">پاسخ</a>
+            </div>
+    </div>
+    {% if comment.related_name.all %}
+        {% include 'shop/partial/product_comments_nested.html' %}
+    {% endif %}
+</div>
+
+{% endfor %}

@@ -1,0 +1,29 @@
+<div class="d-flex justify-content-start align-items-center">
+    <h1 class="h3">{{ product.name }}</h1>
+    <span class="badge badge-primary mr-2">{{ product.brand }}</span>
+</div>
+<div class="mt-4">
+    <p>{{ product.meta_description }}</p>
+</div>
+<hr />
+<div class="my-2">
+    <span>دسته بندی های مرتبط: </span>
+    {% for ca in product.category.all %}
+    <span class="badge badge-warning">
+        <a href="{% url 'shop:category_detail' ca.id %}">
+        {{ca}}
+        </a>
+    </span>
+    {% endfor %}
+</div>
+<div class="my-2">
+    <span>تگ های مرتبط:</span>
+    {% for ta in product.tag.all %}
+    <span class="badge badge-info">
+        {% comment %} <a href="{% url 'shop:tag_detail' ta.id %}"> {% endcomment %}
+        {{ta}}
+        {% comment %} </a> {% endcomment %}
+    </span>
+    {% endfor %}
+</div>
+<hr />
