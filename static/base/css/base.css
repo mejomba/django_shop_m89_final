@@ -3,6 +3,7 @@
 
 
 :root {
+    --c0:#f9f9f9;
     --c1:#ecf9f2;
     --c2:#f0f5f5;
     --c3:#001408;
@@ -114,4 +115,7 @@ footer a:hover {
 }
 .mt-50 {
     margin-top: 25rem !important;
+}
+.bg-0{
+    background-color: var(--c0);
 }
