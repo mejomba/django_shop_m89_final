@@ -84,7 +84,7 @@ class Product(BaseModel):
         if price <= 0:
             return 0
 
-        return price
+        return int(price)
     get_price_apply_discount.short_description = 'قیمت پس از تخفیف'
 
     def __str__(self):
@@ -142,12 +142,19 @@ class Comment(BaseModel):
         return f'{self.content}'
 
 
+class MagicSaleManager(models.Manager):
+    def active(self):
+        return self.filter(end_date__gt=timezone.now(), start_date__lt=timezone.now())
+    
+    
 class MagicSale(BaseModel):
     name = models.CharField(verbose_name='نام', max_length=255)
     slug = models.SlugField(verbose_name='نام منحصر به فرد', max_length=100, unique=True)
     start_date = models.DateTimeField(verbose_name='تاریخ شروع')
     end_date = models.DateTimeField(verbose_name='تاریخ پایان')
 
+    objects = MagicSaleManager()
+    
     class Meta:
         verbose_name = 'حراج شگفت انگیز'
         verbose_name_plural = 'حراج های شگفت انگیز'
