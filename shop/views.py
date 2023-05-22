@@ -5,11 +5,25 @@ from django.views import generic
 from . import models
 
 
+# def magin_sale(request):
+#     magicsale = models.MagicSale.objects.active()
+#     print(magicsale)
+#     context = {'magicsale': magicsale}
+#     return render(request, 'base/magic_sale.html', context)
+
+
 def landing_page(request):
-    # return render(request, 'shop/landing_page.html', {})
+    magicsale = models.MagicSale.objects.active()
+    discounts = models.Discount.objects.active()
+
+    products_list = [discount.product_discount_related_name.all().distinct() for discount in discounts]
+    products = products_list[0].union(*products_list)
+    
+    context = {'magicsale': magicsale, 'products': products}
+    return render(request, 'shop/landing_page.html', context)
     # return render(request, 'core/register.html', {})
     # return render(request, 'core/login.html', {})
-    return render(request, 'core/profile.html', {})
+    # return render(request, 'core/profile.html', {})
     # return render(request, 'core/order_history.html', {}) # load in profile first view
     # return render(request, 'core/address.html', {})
     # return render(request, 'shop/discount_page.html', {})
