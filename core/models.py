@@ -3,6 +3,7 @@ import uuid
 import os
 import re
 
+from django.db.models import Q
 from django.contrib.auth.base_user import BaseUserManager
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -126,6 +127,14 @@ class Address(BaseModel):
         return f'{self.user.full_name}'
 
 
+class DescountManager(models.Manager):
+    def active(self):
+        return self.filter(Q(limit__gt=0)|Q(limit=None),
+                           end_date__gt=timezone.now(), 
+                           start_date__lt=timezone.now()
+                           )
+    
+    
 class Discount(BaseModel):
     name = models.CharField(verbose_name='نام تخفیف', max_length=255, unique=True)
     code = models.CharField(verbose_name='کد تخفیف', unique=True, max_length=16)
@@ -140,6 +149,8 @@ class Discount(BaseModel):
     meta_description = models.CharField(verbose_name='توضیح کوتاه (SEO)', max_length=255, null=True, blank=True)
     description = models.TextField(verbose_name='توضیحات', max_length=1000, null=True, blank=True)
 
+    objects = DescountManager()
+    
     class Meta:
         verbose_name = 'تخفیف'
         verbose_name_plural = 'تخفیف ها'
