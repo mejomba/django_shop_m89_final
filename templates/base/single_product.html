@@ -5,12 +5,13 @@
         <img class="card-img-top" src="{{ product.thumbnail.url }}" alt="Card image cap" style="max-height: 200px;">
         <div class="card-body">
           <h5 class="card-title">{{ product.name }}</h5>
-          <p class="card-text">{{ product.meta_description }}</p>
         </div>
-
+        {% if product.get_price_apply_discount < product.price %}
         <div class="m-2">
             <span>قیمت</span>
+            <del>
             <span>{{ product.price }}</span>
+            </del>
             <span>تومان</span>
         </div>
         <div class="m-2">
@@ -18,6 +19,15 @@
             <span>{{ product.get_price_apply_discount }}</span>
             <span>تومان</span>
         </div>
+        {% else %}
+        <div class="m-2">
+            <span>قیمت</span>
+            <span>{{ product.price }}</span>
+            <span>تومان</span>
+        </div>
+        {% endif %}
+        
+        
         <div class="m-2">
           {% for ca in product.category.all %}
             <span class="badge badge-warning">
