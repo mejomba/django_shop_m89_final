@@ -28,6 +28,7 @@ def landing_page(request):
     # return render(request, 'core/address.html', {})
     # return render(request, 'shop/discount_page.html', {})
     # return render(request, 'shop/product_list.html', {})
+    # return render(request, 'search_result.html', {})
 
 
 class ProductListView(generic.ListView):
