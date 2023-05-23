@@ -18,6 +18,11 @@ def post_image_file_path(instance, filename: str):
     return os.path.join(f'uploads/post/{timezone.now().date()}', filename)
 
 
+class CategoryManager(models.Manager):
+    def menu(self):
+        return self.filter(show_in_menu=True)
+    
+    
 class Category(BaseModel):
     title = models.CharField(verbose_name='عنوان دسته', max_length=64)
     meta_title = models.CharField(verbose_name='عنوان دسته(SEO)', max_length=64, null=True, blank=True)
@@ -28,6 +33,8 @@ class Category(BaseModel):
     parent_category = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
     discount = models.ManyToManyField(Discount, related_name='category_discount_related_name', null=True, blank=True)
 
+    objects = CategoryManager()
+    
     class Meta:
         verbose_name = 'دسته بندی'
         verbose_name_plural = 'دسته بندی ها'
