@@ -1,44 +1,108 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
-    <a class="navbar-brand text-success font-weight-bold" href="#">فروشگاه لباس</a>
-    <!-- <a href="#" class="btn btn-warning mx-2">ورود / ثبت نام</a> -->
-    <!-- Example split danger button -->
-  <div class="btn-group mx-2" style="direction:ltr">
-    <a href="#" class="btn btn-warning">ثبت نام</a>
-    <a href="#" class="btn btn-success ">ورود</a>
-  </div>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>    
+{% load custom_tags %}
 
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      <ul class="navbar-nav ml-auto">
-        <li class="nav-item active">
-          <a class="nav-link" href="#">خانه <span class="sr-only">(current)</span></a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">آیتم اول</a>
-        </li>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-expanded="false">
-            دسته بندی اول
-          </a>
-          <div class="dropdown-menu">
-            <a class="dropdown-item" href="#">دسته دوم</a>
-            <a class="dropdown-item" href="#">دسته سوم</a>
-            <!-- <div class="dropdown-divider"></div> -->
-            <a class="dropdown-item" href="#">دسته سوم</a>
-          </div>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">دسته بندی مستقل</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">تماس با ما</a>
-        </li>
-      </ul>
-      <form class="form-inline my-2 my-lg-0">
-        <input class="form-control mr-sm-2" type="search" placeholder="نام محصول یا دسته بندی" aria-label="Search">
-        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">جستجو</button>
-      </form>
+  <script type="text/javascript">
+    /// some script
+    
+    // jquery ready start
+    $(document).ready(function() {
+      // jQuery code
+    
+      //////////////////////// Prevent closing from click inside dropdown
+        $(document).on('click', '.dropdown-menu', function (e) {
+          e.stopPropagation();
+        });
+    
+        // make it as accordion for smaller screens
+        if ($(window).width() < 992) {
+          $('.dropdown-menu a').click(function(e){
+            e.preventDefault();
+              if($(this).next('.submenu').length){
+                $(this).next('.submenu').toggle();
+              }
+              $('.dropdown').on('hide.bs.dropdown', function () {
+             $(this).find('.submenu').hide();
+          })
+          });
+      }
+      
+    }); // jquery end
+    </script>
+
+    <style type="text/css">
+      @media (min-width: 992px){
+          .dropdown-menu .dropdown-toggle:after{
+              border-top: .3em solid transparent;
+              border-right: 0;
+              border-bottom: .3em solid transparent;
+              border-left: .3em solid;
+          }
+  
+          .dropdown-menu .dropdown-menu{
+              margin-left:0; margin-right: 0;
+          }
+  
+          .dropdown-menu li{
+              position: relative;
+          }
+          .nav-item .submenu{ 
+              display: none;
+              position: absolute;
+              right:100%; top:-7px;
+          }
+          .nav-item .submenu-left{ 
+              left:100%; right:auto;
+          }
+  
+          .dropdown-menu > li:hover{ background-color: #f1f1f1 }
+          .dropdown-menu > li:hover > .submenu{
+              display: block;
+          }
+      }
+  </style>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+      <a class="navbar-brand text-success font-weight-bold" href="#">فروشگاه لباس</a>
+  
+    <div class="btn-group mx-2" style="direction:ltr">
+      <a href="#" class="btn btn-warning">ثبت نام</a>
+      <a href="#" class="btn btn-success ">ورود</a>
     </div>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#main_nav">
+      <span class="navbar-toggler-icon"></span>
+      </button>   
+      
+  
+    <div class="collapse navbar-collapse" id="main_nav">
+  
+  <ul class="navbar-nav ml-auto">
+    <li class="nav-item active"> <a class="nav-link" href="{% url 'shop:landing_page' %}">خانه </a> </li>
+    {% for category in categories %}
+
+        {% if category.parent_category == None and category.category_set.all %}
+        <li class="nav-item dropdown">
+
+          <a href="{% url 'shop:category_detail' category.id %}" class="btn text-muted">{{category}}</a>
+          <a class="dropdown-toggle dropdown-toggle-split text-danger btn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <span class="sr-only">Toggle Dropdown</span>
+          </a>
+
+          <ul class="dropdown-menu">
+                {% include 'shop/partial/category_nav_nested.html' %}
+          </ul>
+        </li>
+        
+        {% elif category.parent_category == None and not category.category_set.all%}
+        
+          <li class="nav-item"><a class="nav-link" href="{% url 'shop:category_detail' category.id %}"> {{category}} </a></li>
+
+        {% endif %}
+        {% endfor %}
+  </ul>
+  
+    <form class="form-inline my-2 my-lg-0">
+      <input class="form-control mr-sm-2" type="search" placeholder="نام محصول یا دسته بندی" aria-label="Search">
+      <button class="btn btn-outline-success my-2 my-sm-0" type="submit">جستجو</button>
+    </form>
+  </div> <!-- navbar-collapse.// -->
+  
   </nav>
