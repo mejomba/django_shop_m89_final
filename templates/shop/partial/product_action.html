@@ -4,7 +4,7 @@
     <span class="badge badge-primary mr-2">{{product.brand}}</span>
 </div>
 
-    {% if product.get_final_price < product.price %}
+    {% if product.get_price_apply_discount < product.price %}
     <div class="my-4 d-flex justify-content-around">
         
         <span>قیمت</span>
@@ -18,7 +18,7 @@
     <div class="my-4 d-flex justify-content-around">
         <span>قیمت با تخفیف</span>
         <div>
-            <span class="mx-1">{{product.get_final_price}}</span>
+            <span class="mx-1">{{product.get_price_apply_discount}}</span>
             <span>تومان</span>
         </div>
     </div>
