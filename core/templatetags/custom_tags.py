@@ -1,4 +1,6 @@
 from django import template
+from shop.models import Category
+
 
 register = template.Library()
 
@@ -34,3 +36,18 @@ def show_product_full_info(product):
 @register.inclusion_tag('shop/partial/product_comments.html')
 def show_product_comments(comments):
     return {'comments': comments}
+
+
+@register.inclusion_tag('base/nav.html')
+def category_navbar():
+    print('category navbar========================================')
+    return {'categories': Category.objects.menu()}
+    
+
+
+@register.simple_tag
+def parent_counter(category, n=0):
+    if category.parent_category:
+        n += 1
+        return parent_counter(category.parent_category, n)
+    return n
