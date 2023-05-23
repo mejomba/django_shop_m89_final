@@ -1,0 +1,13 @@
+{% load custom_tags %}
+
+{% for category in category.category_set.all %}
+
+    <a href="{% url 'shop:category_detail' category.id%}" class="mb-1 mr-{% parent_counter category %} px-1 py-1 border-r-2 category-text list-group-item">
+        {{category}}
+    </a>
+
+    {% if category.category_set.all %}
+        {% include 'shop/partial/category_list_nested.html' %}
+    {% endif %}
+
+{% endfor %}
