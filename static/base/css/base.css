@@ -119,3 +119,6 @@ footer a:hover {
 .bg-0{
     background-color: var(--c0);
 }
+.border-r-2 {
+    border-right: solid 2px rebeccapurple;
+  }
