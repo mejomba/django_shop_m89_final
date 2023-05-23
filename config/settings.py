@@ -40,6 +40,8 @@ INSTALLED_APPS = [
 
     # third party
     # 'prettyjson',
+    'rest_framework',
+    'rest_framework_simplejwt',
 
     # our app
     'core.apps.CoreConfig',
@@ -108,6 +110,12 @@ DATABASES = {
 # ]
 AUTH_PASSWORD_VALIDATORS = []
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASS': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
 
@@ -140,3 +148,4 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'core.User'
+
