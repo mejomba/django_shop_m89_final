@@ -67,6 +67,10 @@ class BaseModel(models.Model):
         return to_jalali(self.last_update)    
     jlast_update.short_description = 'آخرین به روز رسانی'
 
+    def jcreate_at(self):
+        return to_jalali(self.create_at)
+    jlast_update.short_description = 'تاریخ ایجاد'
+
 
 class User(BaseModel, AbstractBaseUser, PermissionsMixin):
     """Custom user that support email instead of username"""
@@ -95,6 +99,10 @@ class User(BaseModel, AbstractBaseUser, PermissionsMixin):
         if (f := self.first_name) and (l := self.last_name):
             return f'{f} {l}'
         return f'{self.email}'
+
+    def jlast_login(self):
+        return to_jalali(self.last_login)
+    jlast_login.short_description = 'آخرین ورود'
 
     def display_profile_image(self):
         if self.profile_image:
