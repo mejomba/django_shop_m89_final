@@ -27,28 +27,42 @@
                 لیست محصولات
                 <span class="badge badge-warning">{{ category }}</span>
             </h2>
-            <div class="row">
+            <div class="row infinite-container">
                 <!-- product -->
                 {% for product in products %}
                     {% show_single_product product %}
+                    {% empty %}
+                    <div>کالایی در این دسته بندی موجود نیست</div>
                 {% endfor %}
             </div>
-                    <!-- pagination -->
-            <nav aria-label="Page navigation" class="mt-10">
-                <ul class="pagination pagination-lg justify-content-center ltr">
-                  <li class="page-item disabled">
-                    <a class="page-link" href="#" tabindex="-1">اولی</a>
-                  </li>
-                  <li class="page-item"><a class="page-link" href="#">1</a></li>
-                  <li class="page-item  active"><a class="page-link" href="#">2</a></li>
-                  <li class="page-item"><a class="page-link" href="#">3</a></li>
-                  <li class="page-item">
-                    <a class="page-link" href="#">آخری</a>
-                  </li>
-                </ul>
-              </nav>
-</div>
+
+        <!-- pagination -->
+
+                {% if page_obj.has_next %}
+                      <a class="infinite-more-link" href="?page={{ page_obj.next_page_number }}"></a>
+                {% endif %}
+                {% if page_obj.end_index != 0 %}
+                    <div class="d-flex justify-content-center" style="display: none">
+                          <div class="spinner-border loading" role="status" aria-hidden="true"></div>
+                    </div>
+                {% endif %}
+    </div>
 </div>
 
 
 {% endblock content %}
+
+{% block custom_js %}
+  <script>
+    var infinite = new Waypoint.Infinite({
+      element: $('.infinite-container')[0],
+        offset: 'bottom-in-view',
+      onBeforePageLoad: function () {
+        $('.loading').show();
+      },
+      onAfterPageLoad: function ($items) {
+        $('.loading').hide();
+      }
+    });
+  </script>
+{% endblock %}
