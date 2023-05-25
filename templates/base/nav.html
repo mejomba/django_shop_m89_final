@@ -61,11 +61,18 @@
   </style>
 
     <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
-      <a class="navbar-brand text-success font-weight-bold" href="#">فروشگاه لباس</a>
-  
+      <a class="navbar-brand text-success font-weight-bold" href="{% url 'shop:landing_page' %}"> فروشگاه لباس </a>
+
     <div class="btn-group mx-2" style="direction:ltr">
-      <a href="#" class="btn btn-warning">ثبت نام</a>
-      <a href="#" class="btn btn-success ">ورود</a>
+
+        {% if request.user.is_authenticated %}
+{#          <a href="{% url 'core_api:register' %}" class="btn btn-warning">سبد خرید</a>#}
+           <a href="{% url 'core:profile' %}" class="btn btn-success ">پروفایل</a>
+        {% else %}
+            <a href="{% url 'core_api:register' %}" class="btn btn-warning">ثبت نام</a>
+            <a href="{% url 'core_api:login' %}" class="btn btn-success ">ورود</a>
+        {% endif %}
+
     </div>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#main_nav">
       <span class="navbar-toggler-icon"></span>
@@ -98,7 +105,8 @@
         {% endif %}
         {% endfor %}
   </ul>
-  
+
+        <a href="#">سبد خرید</a>
     <form class="form-inline my-2 my-lg-0">
       <input class="form-control mr-sm-2" type="search" placeholder="نام محصول یا دسته بندی" aria-label="Search">
       <button class="btn btn-outline-success my-2 my-sm-0" type="submit">جستجو</button>
