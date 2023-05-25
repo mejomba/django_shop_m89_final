@@ -8,27 +8,27 @@
 
 {% block content %}
   <div class="login-wrapper my-5">
-    <form action="" class="form mt-5">
+    <form action="{% url 'core_api:register' %}" class="form mt-5" method="POST">
       <img src="../image/login/avatar.png" alt="">
       <h2 class="text-warning">فرم ثبت نام</h2>
       <div class="input-group">
-        <input type="text" name="firstname" id="firstname" required class="text-right">
+        <input type="text" name="first_name" id="firstname" required class="text-right">
         <label for="firstname">نام</label>
       </div>
       <div class="input-group">
-        <input type="text" name="lastname" id="lastname" required class="text-right">
+        <input type="text" name="last_name" id="lastname" required class="text-right">
         <label for="lastname">نام خانوادگی</label>
       </div>
       <div class="input-group">
-        <input type="text" name="loginUser" id="loginUser" required>
+        <input type="text" name="phone" id="phone" required>
         <label for="loginUser">شماره تلفن</label>
       </div>
       <div class="input-group">
-        <input type="password" name="loginPassword" id="loginPassword" required>
+        <input type="password" name="password" id="password" required>
         <label for="loginPassword">گذرواژه</label>
       </div>
       <div class="input-group">
-        <input type="email" name="registerEmail" id="registerEmail" required>
+        <input type="email" name="email" id="email" required>
         <label for="registerEmail">ایمیل</label>
       </div>
       
@@ -38,9 +38,35 @@
       
       <div class="d-flex justify-content-around mt-4">
         <span>قبلا ثبت نام کرده اید</span>
-        <a href="login.html" class="text-success">وارد شوید</a><br>
+        <a href="{% url 'core_api:login' %}" class="text-success">وارد شوید</a><br>
       </div>
     </form>
     
   </div>
+{% endblock %}
+
+{% block custom_js %}
+    <script>
+    $('#register-form').submit(function (event){
+        event.preventDefault();
+        let formData = new FormData();
+        formData.append('first_name', $('#firstname'));
+        formData.append('last_name', $('#lastname'));
+        formData.append('phone', $('#phone'));
+        formData.append('email', $('#email'));
+        formData.append('password', $('#password'));
+        $.ajax({
+            url: this.action,
+            method: "POST",
+            data: formData,
+            success: function (data){
+                window.location.replace("{% url 'core_api:login' %}")
+            },
+            error: function (rs, e){
+                console.log(rs.status)
+                console.log(rs.responseText)
+            }
+        }) // ajax
+    })
+    </script>
 {% endblock %}
