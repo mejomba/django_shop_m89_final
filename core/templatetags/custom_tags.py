@@ -39,10 +39,8 @@ def show_product_comments(comments):
 
 
 @register.inclusion_tag('base/nav.html')
-def category_navbar():
-    print('category navbar========================================')
-    return {'categories': Category.objects.menu()}
-    
+def category_navbar(request):
+    return {'categories': Category.objects.menu(), 'request': request}
 
 
 @register.simple_tag
