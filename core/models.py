@@ -3,12 +3,14 @@ import uuid
 import os
 import re
 
+from django.db.models import Q
 from django.contrib.auth.base_user import BaseUserManager
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.utils import timezone
+from django.utils.html import format_html
 
 from extension.utils import to_jalali
 
@@ -65,6 +67,10 @@ class BaseModel(models.Model):
         return to_jalali(self.last_update)    
     jlast_update.short_description = 'آخرین به روز رسانی'
 
+    def jcreate_at(self):
+        return to_jalali(self.create_at)
+    jlast_update.short_description = 'تاریخ ایجاد'
+
 
 class User(BaseModel, AbstractBaseUser, PermissionsMixin):
     """Custom user that support email instead of username"""
@@ -76,8 +82,8 @@ class User(BaseModel, AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField(verbose_name='نام خانوادگی', max_length=64, null=True)
     is_active = models.BooleanField(verbose_name='فعال', default=False)
     is_staff = models.BooleanField(verbose_name='کارمند', default=False)
-    role = models.CharField(verbose_name='نقش کاربر', choices=USER_ROLE, max_length=1)
-    profile_image = models.ImageField(verbose_name='تصویر پروفایل', upload_to=user_image_file_path, null=True, blank=True)
+    role = models.CharField(verbose_name='نقش کاربر', choices=USER_ROLE, max_length=1, default='c')
+    profile_image = models.ImageField(verbose_name='تصویر پروفایل', upload_to=user_image_file_path, null=True, blank=True, default=f'uploads/user/no_image.png')
 
     discount = models.ForeignKey('Discount', on_delete=models.SET_NULL, null=True, blank=True)
     objects = UserManager()
@@ -93,6 +99,16 @@ class User(BaseModel, AbstractBaseUser, PermissionsMixin):
         if (f := self.first_name) and (l := self.last_name):
             return f'{f} {l}'
         return f'{self.email}'
+
+    def jlast_login(self):
+        return to_jalali(self.last_login)
+    jlast_login.short_description = 'آخرین ورود'
+
+    def display_profile_image(self):
+        if self.profile_image:
+            return format_html('<img width=64 src={}>'.format(self.profile_image.url))
+
+    display_profile_image.short_description = 'تصویر'
 
     # def get_discounts(self):
     #     return "\n".join([d.neme for d in self.discount.all()])
@@ -119,6 +135,14 @@ class Address(BaseModel):
         return f'{self.user.full_name}'
 
 
+class DescountManager(models.Manager):
+    def active(self):
+        return self.filter(Q(limit__gt=0)|Q(limit=None),
+                           end_date__gt=timezone.now(), 
+                           start_date__lt=timezone.now()
+                           )
+    
+    
 class Discount(BaseModel):
     name = models.CharField(verbose_name='نام تخفیف', max_length=255, unique=True)
     code = models.CharField(verbose_name='کد تخفیف', unique=True, max_length=16)
@@ -133,6 +157,8 @@ class Discount(BaseModel):
     meta_description = models.CharField(verbose_name='توضیح کوتاه (SEO)', max_length=255, null=True, blank=True)
     description = models.TextField(verbose_name='توضیحات', max_length=1000, null=True, blank=True)
 
+    objects = DescountManager()
+    
     class Meta:
         verbose_name = 'تخفیف'
         verbose_name_plural = 'تخفیف ها'

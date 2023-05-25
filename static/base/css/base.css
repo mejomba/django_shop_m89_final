@@ -3,6 +3,7 @@
 
 
 :root {
+    --c0:#f9f9f9;
     --c1:#ecf9f2;
     --c2:#f0f5f5;
     --c3:#001408;
@@ -51,7 +52,6 @@ a:link {
 }
 
 .card:hover{
-     transform: scale(1.05);
   box-shadow: 0 10px 20px rgba(0,0,0,.12), 0 4px 8px rgba(0,0,0,.06);
 }
 
@@ -116,3 +116,9 @@ footer a:hover {
 .mt-50 {
     margin-top: 25rem !important;
 }
+.bg-0{
+    background-color: var(--c0);
+}
+.border-r-2 {
+    border-right: solid 2px rebeccapurple;
+  }

@@ -3,86 +3,24 @@
 
 {% block content %}
 
-{% include "base/magic_sale.html" %}
+{% include "base/magic_sale.html" with magicsale=magicsale %}
+
 {% include "base/discount.html" %}
     
     <div class="container my-5">
         <h2 class="text-center p-4">دسته های اصلی</h2>
         <div class="row">
-            <div class="col-6 col-md-4 col-lg-2">
-                <!-- category -->
-                <div class="d-flex justify-content-center align-items-center m-2">
-                    <a href="#" class="text-center py-4 px-3 border border-rounded category-text">
-                         دسته بندی
-                    </a>
+            {% for category in categories %}
+                <div class="col-6 col-md-4 col-lg-3">
+                    <!-- category -->
+                    <div class="d-flex justify-content-center align-items-center m-2">
+                        <a href="{% url 'shop:category_detail' category.id %}" class="text-center py-4 px-3 border border-rounded category-text">
+                            {{ category }}
+                        </a>
+                    </div>
                 </div>
-            </div>
+            {% endfor %}
 
-            <div class="col-6 col-md-4 col-lg-2">
-                <!-- category -->
-                <div class="d-flex justify-content-center align-items-center m-2">
-                    <a href="#" class="text-center py-4 px-3 border border-rounded category-text">
-                         دسته بندی
-                    </a>
-                </div>
-            </div>
-
-
-            <div class="col-6 col-md-4 col-lg-2">
-                <!-- category -->
-                <div class="d-flex justify-content-center align-items-center m-2">
-                    <a href="#" class="text-center py-4 px-3 border border-rounded category-text">
-                         دسته بندی
-                    </a>
-                </div>
-            </div>
-
-            <div class="col-6 col-md-4 col-lg-2">
-                <!-- category -->
-                <div class="d-flex justify-content-center align-items-center m-2">
-                    <a href="#" class="text-center py-4 px-3 border border-rounded category-text">
-                         دسته بندی
-                    </a>
-                </div>
-            </div>
-
-            <div class="col-6 col-md-4 col-lg-2">
-                <!-- category -->
-                <div class="d-flex justify-content-center align-items-center m-2">
-                    <a href="#" class="text-center py-4 px-3 border border-rounded category-text">
-                         دسته بندی
-                    </a>
-                </div>
-            </div>
-
-            <div class="col-6 col-md-4 col-lg-2">
-                <!-- category -->
-                <div class="d-flex justify-content-center align-items-center m-2">
-                    <a href="#" class="text-center py-4 px-3 border border-rounded category-text">
-                         دسته بندی
-                    </a>
-                </div>
-            </div>
-
-            <div class="col-6 col-md-4 col-lg-2">
-                <!-- category -->
-                <div class="d-flex justify-content-center align-items-center m-2">
-                    <a href="#" class="text-center py-4 px-3 border border-rounded category-text">
-                         دسته بندی
-                    </a>
-                </div>
-            </div>
-
-            <div class="col-6 col-md-4 col-lg-2">
-                <!-- category -->
-                <div class="d-flex justify-content-center align-items-center m-2">
-                    <a href="#" class="text-center py-4 px-3 border border-rounded category-text">
-                         دسته بندی
-                    </a>
-                </div>
-            </div>
-
-            
         </div>
         <div class="d-flex justify-content-center mt-3">
             <a href="#" class="btn btn-warning">مشاهده همه دسته ها </a>

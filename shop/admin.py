@@ -14,7 +14,7 @@ class ProductImageAdmin(admin.StackedInline):
 class ProductAdmin(admin.ModelAdmin):
     inlines = [ProductImageAdmin]
 
-    list_display = ('name', 'brand', 'price', 'get_price_apply_tax')
+    list_display = ('name', 'brand', 'price', 'get_price_apply_discount', 'get_price_apply_tax')
     fields = ('name',
               'slug',
               'brand',
@@ -69,7 +69,7 @@ class TagAdmin(admin.ModelAdmin):
 @admin.register(models.Comment)
 class CommentAdmin(admin.ModelAdmin):
 
-    fields = ('title',
+    fields = (
               'content',
               'rating',
               'parent_comment',
@@ -88,3 +88,6 @@ class CommentAdmin(admin.ModelAdmin):
 
     class Meta:
         model = models.WishList
+
+
+admin.site.register(models.MagicSale)

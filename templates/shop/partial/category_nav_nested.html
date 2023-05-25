@@ -1,0 +1,10 @@
+    {% for category in category.category_set.all %}
+
+    <li> <a class="dropdown-item" href="{% url 'shop:category_detail' category.id %}">{{category}} {% if category.category_set.all %}>{% endif %}</a>   
+          {% if category.category_set.all and category.parent_category %}
+            <ul class="submenu dropdown-menu">
+                {% include 'shop/partial/category_nav_nested.html' with symbol=">" %}
+            </ul>
+          {% endif %}  
+        </li>
+    {% endfor %}

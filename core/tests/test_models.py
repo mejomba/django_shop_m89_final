@@ -6,28 +6,17 @@ from django.utils import timezone
 from core.models import Address, Discount
 
 
-def test_user(email='test@mail.com', password='Test1234', extra={}):
-    return get_user_model().objects.create_user(email, password, **extra)
-
-
-def test_address(user, extra={}):
-    return Address.objects.create(user=user, **extra)
-
-
-def test_discount(extra):
-    return Discount.objects.create(**extra)
-
-
 class UserModelTest(TestCase):
-    
     def setUp(self) -> None:
+
         self.required = ('test@MaiL.CoM', 'Test1234')
         self.extra = extra = {'phone': '09112345678', 
                             'first_name': 'mojtaba', 
                             'last_name': 'aminzadeh'}
+        self.test_user = get_user_model().objects.create_user(email=self.required[0], password=self.required[1], **extra)
     def test_create_user_with_complet_data(self):
         
-        user = test_user(extra=self.extra)
+        user = self.test_user
         
         self.assertEqual(user.email, 'test@mail.com')
         self.assertEqual(user.phone, self.extra['phone'])
@@ -39,8 +28,7 @@ class UserModelTest(TestCase):
         
         
     def test_email_normalize(self):
-        user = test_user(email='test@MaiL.COm')
-        
+        user = self.test_user
         self.assertEqual(user.email, 'test@mail.com')
         
     def test_create_user_invalid_email(self):
@@ -51,7 +39,7 @@ class UserModelTest(TestCase):
         self.assertEqual(str(invalid_mail.exception), 'ایمیل اجباری است')
     
     def test_user_fullname_property(self):
-        user = test_user(extra=self.extra)
+        user = self.test_user
         self.assertEqual(user.full_name, 'mojtaba aminzadeh')
         
     def test_create_user_invalid_phone(self):
@@ -67,7 +55,7 @@ class UserModelTest(TestCase):
             get_user_model().objects.create_user(phone='0911234567a')
             
     def test_create_superuser(self):
-        user = get_user_model().objects.create_superuser(*self.required)
+        user = get_user_model().objects.create_superuser(email='mail@mail.com', password='Test1234')
         
         self.assertTrue(user.is_superuser)
         self.assertTrue(user.is_staff)
@@ -75,35 +63,37 @@ class UserModelTest(TestCase):
         
     def test_user_email_exist(self):
         """Test user with exist email (maybe not compatible with postgresql)"""
-        user = test_user()
+        user = self.test_user
         with self.assertRaises(IntegrityError):
             new_user = get_user_model().objects.create_user(user.email, 'Test1234')
             
     def test_user_phone_exist(self):
         """Test user with exist phone (maybe not compatible with postgresql)"""
         
-        user = test_user(extra=self.extra)
+        user = self.test_user
         
         with self.assertRaises(IntegrityError):
             new_user = get_user_model().objects.create_user('new@mail.com', 'Test1234', phone=user.phone)
     
     def test_user_str(self):
-        user = test_user()
+        user = self.test_user
         self.assertEqual(user.email, 'test@mail.com')
         
         
 class AddressModelTest(TestCase):
-    
+    def setUp(self) -> None:
+        self.extra = {'country': 'ایران',
+                 'province': 'تهرا',
+                 'city': 'شهر',
+                 'street': 'خیابان',
+                 'zip_code': '1234567890',
+                 'pelak': '1234',
+                 'full_address': 'آدرس کامل شامل یک متن', }
+        self.test_user = get_user_model().objects.create_user(email='test@mail.com', password='Test1234')
+        self.test_address = Address.objects.create(user=self.test_user, **self.extra)
+
     def test_address_str(self):
-        extra = {'country':'ایران',
-                'province': 'تهرا',
-                'city': 'شهر',
-                'street': 'خیابان',
-                'zip_code': '1234567890',
-                'pelak': '1234',
-                'full_address': 'آدرس کامل شامل یک متن',}
-        
-        address = test_address(user=test_user(), extra=extra)
+        address = self.test_address
         self.assertEqual(str(address), address.user.full_name)
         
 

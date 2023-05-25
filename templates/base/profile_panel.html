@@ -26,9 +26,8 @@
             <!-- ============ SIDE PANEL ITEMS ============ -->
             <ul class="overflow-hidden bg-slate-800 text-gray-100">
                 <li class="pr-2 pt-2 d-flex justify-content-between bg-slate-900 border-b-4 border-b-slate-600">
-                    <!-- <ion-icon name="battery-half-outline" class="self-center ml-2"></ion-icon> -->
-                    <img src="../../static/base/images/enamad.jpg" alt="" class="w-12 h-12 border-2 p-0.5 border-orange-500 rounded-full self-center ">
-                    <a href="#" class="w-full pr-2 py-3 text-white">مجتبی امین زاده سرایدشتی</a>
+                    <img src="{{user.profile_image.url}}" alt="" class="w-12 h-12 border-2 p-0.5 border-orange-500 rounded-full self-center ">
+                    <a href="#" class="w-full pr-2 py-3 text-white">{{ user.first_name }} {{ user.last_name }}</a>
                 </li>
                 <li class="pr-2 d-flex justify-content-between hover:bg-slate-700">
                     <ion-icon name="battery-half-outline" class="self-center ml-2"></ion-icon>
@@ -57,9 +56,12 @@
             </ul>
         
             <ul class="text-gray-100 position-absolute bottom-0 w-full overflow-hidden">
-                <li class="pr-2 d-flex justify-content-between hover:text-red-500 hover:bg-slate-700 border-t-4 border-t-slate-600">
+                <li class="pr-2 d-flex hover:text-red-500 hover:bg-slate-700 border-t-4 border-t-slate-600">
                     <ion-icon name="power-outline" class="self-center ml-2"></ion-icon>
-                    <a href="#" class="w-full py-3 hover:text-red-500"> خروج از حساب </a>
+                    <form action="{% url 'core_api:logout' %}" method="POST" id="logout-form">
+                        {% csrf_token %}
+                        <button type="submit" class="w-full py-3 hover:text-red-500">خروج از حساب کاربری</button>
+                    </form>
                 </li>
             </ul>
         </div>
@@ -67,8 +69,22 @@
 
 
 
-{% block custom_js %} 
+{% block custom_js %}
 <script src="{% static 'core/js/profile.js' %}"></script>
-<script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
-    <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+    <script>
+    $('#logout-form').submit(function (event){
+        event.preventDefault();
+        $.ajax({
+            url: this.action,
+            type: "POST",
+            success: function(data) {
+                alert('logout')
+          },  //end success
+          error: function(rs, e) {
+            console.log(rs.status);
+            console.log(rs.responseText);
+          }  //end error
+        });
+    })
+    </script>
 {% endblock %}

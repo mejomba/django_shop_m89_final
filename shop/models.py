@@ -8,6 +8,7 @@ from django.db import models
 from django.utils.text import slugify
 
 from core.models import BaseModel, Discount
+from core import utils
 
 
 def post_image_file_path(instance, filename: str):
@@ -17,6 +18,11 @@ def post_image_file_path(instance, filename: str):
     return os.path.join(f'uploads/post/{timezone.now().date()}', filename)
 
 
+class CategoryManager(models.Manager):
+    def menu(self):
+        return self.filter(show_in_menu=True)
+    
+    
 class Category(BaseModel):
     title = models.CharField(verbose_name='عنوان دسته', max_length=64)
     meta_title = models.CharField(verbose_name='عنوان دسته(SEO)', max_length=64, null=True, blank=True)
@@ -27,6 +33,8 @@ class Category(BaseModel):
     parent_category = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
     discount = models.ManyToManyField(Discount, related_name='category_discount_related_name', null=True, blank=True)
 
+    objects = CategoryManager()
+    
     class Meta:
         verbose_name = 'دسته بندی'
         verbose_name_plural = 'دسته بندی ها'
@@ -50,7 +58,7 @@ class Product(BaseModel):
     discount = models.ManyToManyField(Discount, related_name='product_discount_related_name', null=True, blank=True, verbose_name='تخفیف')
     category = models.ManyToManyField('Category', related_name='product_category_related_name',verbose_name='دسته بندی')
     tag = models.ManyToManyField('Tag', related_name='product_category_related_name')
-    magic_sale = models.ForeignKey('MagicSale', on_delete=models.CASCADE, verbose_name='حراج شگفت انگیز', null=True)
+    magic_sale = models.ForeignKey('MagicSale', on_delete=models.SET_NULL, verbose_name='حراج شگفت انگیز', null=True, blank=True, default=None)
 
     class Meta:
         verbose_name = 'محصول'
@@ -61,20 +69,30 @@ class Product(BaseModel):
             self.slug = slugify(self.name)
         return super().save(*args, **kwargs)
 
-    # @property
+    def get_final_price(self):
+        return self.get_price_apply_tax()
+    get_final_price.short_description = 'قیمت نهایی'
+    
     def get_price_apply_tax(self):
-        return self.price + (self.price * (self.tax / 100))
+        price = self.get_price_apply_discount()
+        return int(price + (price * (self.tax / 100)))
     get_price_apply_tax.short_description = 'قیمت پس از مالیات'
 
-    # TODO "calculate price with apply all discounts"
-    # def get_price_apply_discount(self):
-    #     discounts = self.discount.objects.all()
-    #     for discount in discounts:
-    #         if discount.percent and discount.mablagh:
-    #             pass
-    #
-    #     return ''
-    # get_price_apply_discount.short_description = 'قیمت پس از تخفیف'
+    def get_price_apply_discount(self):
+        price = self.price
+        sum_mablagh, sum_percent = utils.discount_solver(self)
+
+        if sum_mablagh >= price or sum_percent >= 100:
+            return 0
+
+        price -= (price * (sum_percent/100))
+        price -= sum_mablagh
+
+        if price <= 0:
+            return 0
+
+        return int(price)
+    get_price_apply_discount.short_description = 'قیمت پس از تخفیف'
 
     def __str__(self):
         return f'{self.name}'
@@ -116,11 +134,10 @@ class Tag(BaseModel):
 
 
 class Comment(BaseModel):
-    title = models.CharField(verbose_name='عنوان نظر', max_length=150)
     content = models.TextField(verbose_name='متن نظر', max_length=500)
     rating = models.PositiveIntegerField(verbose_name='امتیاز', validators=[MinValueValidator(1), MaxValueValidator(5)])
 
-    parent_comment = models.ForeignKey('self', on_delete=models.CASCADE)
+    parent_comment = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='related_name')
     product = models.ForeignKey('Product', on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
@@ -129,15 +146,22 @@ class Comment(BaseModel):
         verbose_name_plural = 'نظر ها'
 
     def __str__(self):
-        return f'{self.title}'
+        return f'{self.content}'
 
 
+class MagicSaleManager(models.Manager):
+    def active(self):
+        return self.filter(end_date__gt=timezone.now(), start_date__lt=timezone.now())
+    
+    
 class MagicSale(BaseModel):
     name = models.CharField(verbose_name='نام', max_length=255)
     slug = models.SlugField(verbose_name='نام منحصر به فرد', max_length=100, unique=True)
     start_date = models.DateTimeField(verbose_name='تاریخ شروع')
     end_date = models.DateTimeField(verbose_name='تاریخ پایان')
 
+    objects = MagicSaleManager()
+    
     class Meta:
         verbose_name = 'حراج شگفت انگیز'
         verbose_name_plural = 'حراج های شگفت انگیز'

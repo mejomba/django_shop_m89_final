@@ -1,0 +1,38 @@
+<div class="border py-3 bg-0">
+<div class="d-flex justify-content-around align-items-center">
+    <span>برند</span>
+    <span class="badge badge-primary mr-2">{{product.brand}}</span>
+</div>
+
+    {% if product.get_price_apply_discount < product.price %}
+    <div class="my-4 d-flex justify-content-around">
+        
+        <span>قیمت</span>
+        <del>
+        <div>
+            <span class="mx-1">{{product.price}}</span>
+            <span>تومان</span>
+        </div>
+        </del>
+    </div>
+    <div class="my-4 d-flex justify-content-around">
+        <span>قیمت با تخفیف</span>
+        <div>
+            <span class="mx-1">{{product.get_price_apply_discount}}</span>
+            <span>تومان</span>
+        </div>
+    </div>
+    {% else %}
+    <div class="my-4 d-flex justify-content-around">
+        <span>قیمت</span>
+        <div>
+            <span>{{product.price}}</span>
+            <span>تومان</span>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="my-4 d-flex justify-content-around">
+        <button class="btn btn-success">افزودن به سبد خرید</button>
+    </div>
+</div>

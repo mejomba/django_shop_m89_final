@@ -8,25 +8,113 @@
 
 {% block content %}
   <div class="login-wrapper my-5">
-    <form action="" class="form mt-5">
+    <form action="{% url 'core_api:login' %}" class="form mt-5" id="login-form" method="POST">
+      {% csrf_token %}
       <img src="../image/login/avatar.png" alt="">
       <h2 class="text-success">فرم ورود</h2>
       <div class="input-group">
-        <input type="email" name="registerEmail" id="registerEmail" required>
-        <label for="registerEmail">ایمیل</label>
+        <input type="email" name="email" id="loginEmail" class="ltr" required>
+        <label for="loginEmail">ایمیل</label>
       </div>
       <div class="input-group">
-        <input type="password" name="loginPassword" id="loginPassword" required>
+        <input type="password" name="password" id="loginPassword" class="ltr" required>
         <label for="loginPassword">گذرواژه</label>
       </div>
+        <div class="my-3 text-danger" id="error-area"></div>
       <input type="submit" value="ورود" class="btn btn-success w-100">
       <div class="mt-4 d-flex justify-content-around">
         <span>حساب کاربری ندارید؟ </span>
         <a href="login.html" class="text-warning">ثبت نام کنید</a><br>
       </div>
     </form>
-
-    
     
   </div>
 {% endblock %}
+
+{% block custom_js %}
+<script>
+  $('#login-form').submit(function(event){
+    event.preventDefault();
+    let formData = new FormData();
+    formData.append('email', $('#loginEmail').val().trim());
+    formData.append('password', $('#loginPassword').val().trim())
+
+    $.ajax({
+      url: $('#login-form').attr('action'),
+      type: "POST",
+      data: formData,
+      dataType: 'json',
+      cache: false,
+      processData: false,
+      contentType: false,
+      success: function(data) {
+          window.location.replace('/profile');
+        {#window.localStorage.setItem('refreshToken', data['refresh']);#}
+        {#window.localStorage.setItem('accessToken', data['access'])#}
+        {#window.location = "{% url 'core:profile' %}"#}
+        {#  $.ajax({#}
+        {#      url: {% url 'core_api:profile' %},#}
+        {#      headers: {#}
+        {#          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`#}
+        {#      },#}
+        {#      type: "GET",#}
+        {#      tokenFlag: true,#}
+        {#      success: function (data) {#}
+        {#          console.log(data)#}
+        {#      }, // end success#}
+        {#      error: handleAjaxError#}
+        {#  }) //end ajax#}
+      },  //end success
+      error: function (rs, e) {
+          if (rs.status === 401) {
+              data = JSON.parse(rs.responseText)
+              $('#error-area').text(data.detail)
+          }
+      }
+    }) //end ajax
+  }) //end submit
+
+  function handleAjaxError(rs, e) {
+      if (rs.status === 401) {
+          alert(rs.responseText)
+          if (this.tokenFlag) {
+              this.tokenFlag = false;
+              if (obtainAccessTokenWithRefreshToken()) {
+                  this.headers["Authorization"] = `Token ${localStorage.getItem('accessToken')}`
+                  $.ajax(this);
+              }
+          }
+      } else {
+          console.error(rs.responseText);
+      }
+  }
+
+  function obtainAccessTokenWithRefreshToken() {
+      let flag = true;
+      let formData = new FormData();
+      formData.append('refresh', localStorage.getItem('refresh'))
+      $.ajax({
+          url: "{% url 'core_api:token_refresh' %}",
+          type: "POST",
+          data: formData,
+          async: false,
+          cache: false,
+          processData: false,
+          contentType: false,
+          success: function (data) {
+              localStorage.setItem('accessToken', data['access'])
+          },
+          error: function (rs, e) {
+              if (rs.status === 401) {
+                  flag = false;
+                  window.location.href = "/api/v1/login/";
+              } else {
+                  console.error(rs.responseText);
+              }
+          }
+      });
+      return flag
+  }
+
+</script>
+{% endblock custom_js %}
