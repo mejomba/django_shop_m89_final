@@ -12,8 +12,10 @@ def landing_page(request):
 
     products_list = [discount.product_discount_related_name.all().distinct() for discount in discounts]
     products = products_list[0].union(*products_list)
+
+    last_products = models.Product.objects.all().order_by('-create_at')[:4]
     
-    context = {'magicsale': magicsale, 'products': products, 'categories': categories}
+    context = {'magicsale': magicsale, 'products': products, 'categories': categories, 'last_products': last_products}
     return render(request, 'shop/landing_page.html', context)
 
 
@@ -22,6 +24,13 @@ class ProductListView(generic.ListView):
     template_name = 'shop/product_list.html'
     context_object_name = 'products'
     paginate_by = 2
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        # context['images'] = models.ProductImage.objects.filter(product=self.kwargs['pk'])
+        # context['comments'] = models.Comment.objects.filter(product=self.kwargs['pk']).order_by('-create_at')
+        print(context)
+        return context
 
 
 class ProductDetailView(generic.DetailView):
@@ -49,7 +58,7 @@ class CategoryDetailView(generic.ListView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        print(context)
+        context['category'] = get_object_or_404(models.Category, id=self.kwargs['pk'])
         return context
 
     def get_queryset(self):
