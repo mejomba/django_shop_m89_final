@@ -12,7 +12,8 @@ class UserModelTest(TestCase):
         self.required = ('test@MaiL.CoM', 'Test1234')
         self.extra = extra = {'phone': '09112345678', 
                             'first_name': 'mojtaba', 
-                            'last_name': 'aminzadeh'}
+                            'last_name': 'aminzadeh',
+                              'role': 'c'}
         self.test_user = get_user_model().objects.create_user(email=self.required[0], password=self.required[1], **extra)
     def test_create_user_with_complet_data(self):
         
