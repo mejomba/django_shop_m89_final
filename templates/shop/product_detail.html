@@ -29,9 +29,29 @@
     <div class="container-fluid">
         <div class="row row-cols-1">
             <div class="col">
-                <h3 class="my-4">ظر کاربران</h3>
+                <h3 class="my-4">نظر کاربران</h3>
             </div>
-            <div class="col">            
+            <div class="col">
+                <div class="container my-4">
+                    <form>
+                    {% if request.user.is_authenticated %}
+                        <div class="form-group">
+                        <label for="exampleInputEmail1">Email address</label>
+                        <input type="email" class="form-control" id="exampleInputEmail1" placeholder="{{ request.user.email }}" aria-describedby="emailHelp" disabled>
+                      </div>
+                        {% else %}
+                        <div class="form-group">
+                        <label for="exampleInputEmail1">Email address</label>
+                        <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
+                      </div>
+                    {% endif %}
+                  <div class="form-group">
+                    <label for="exampleInputPassword1">نظر شما</label>
+                      <textarea class="form-control" rows="10"></textarea>
+                  </div>
+                  <button type="submit" class="btn btn-primary">ارسال نظر</button>
+                </form>
+                </div>
                 {% show_product_comments comments %}
             </div>
         </div>
