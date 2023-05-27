@@ -61,7 +61,7 @@ class Order(BaseModel):
         ('6', 'ارسال پیک'),
     )
     status = models.CharField(choices=ORDER_STATUS, max_length=1, verbose_name='وضعیت', default='1')
-    shipping = models.CharField(choices=SHIPPING_METHOD, max_length=1, verbose_name='روش ارسال')
+    shipping = models.CharField(choices=SHIPPING_METHOD, max_length=1, verbose_name='روش ارسال', default='1')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     address = models.ForeignKey(Address, on_delete=models.CASCADE)
     time_for_pay = models.DateTimeField(verbose_name='زمال مجاز برای پرداخت', null=True, blank=True)
@@ -77,7 +77,7 @@ class Order(BaseModel):
         if not self.time_for_pay:
             self.time_for_pay = timezone.now() + datetime.timedelta(minutes=30)
             self.save()
-        return super().save(*args, **kwargs)
+            super().save(*args, **kwargs)
 
     # TODO "calculate total price of order after discount"
     # def get_order_total_price(self):
