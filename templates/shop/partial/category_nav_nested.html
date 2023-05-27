@@ -1,10 +1,32 @@
-    {% for category in category.category_set.all %}
+{% for category in category.category_set.all %}
+    {% if category.show_in_menu %}
+    <li> <a class="dropdown-item" href="{% url 'shop:category_detail' category.id %}">{{category}} {% if category.category_set.all %}>{% endif %}</a>
 
-    <li> <a class="dropdown-item" href="{% url 'shop:category_detail' category.id %}">{{category}} {% if category.category_set.all %}>{% endif %}</a>   
           {% if category.category_set.all and category.parent_category %}
-            <ul class="submenu dropdown-menu">
-                {% include 'shop/partial/category_nav_nested.html' with symbol=">" %}
-            </ul>
-          {% endif %}  
-        </li>
-    {% endfor %}
+              {% for ca in category.category_set.all %}
+                  {% if ca.show_in_menu %}
+
+                      <ul class="submenu dropdown-menu">
+                          {% include 'shop/partial/category_nav_nested.html' with symbol=">" %}
+                      </ul>
+
+                      {% else %}
+
+                      {% include 'shop/partial/category_nav_nested.html' with symbol=">" %}
+
+                  {% endif %}
+
+              {% endfor %}
+          {% endif %}
+
+    </li>
+
+    {% elif category.category_set.all and category.parent_category %}
+
+        <ul class="submenu dropdown-menu">
+            {% include 'shop/partial/category_nav_nested.html' with symbol=">" %}
+        </ul>
+
+    {% endif %}
+
+{% endfor %}

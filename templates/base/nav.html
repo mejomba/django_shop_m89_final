@@ -85,7 +85,7 @@
     <li class="nav-item active"> <a class="nav-link" href="{% url 'shop:landing_page' %}">خانه </a> </li>
     {% for category in categories %}
 
-        {% if category.parent_category == None and category.category_set.all %}
+        {% if category.parent_category == None and category.category_set.all and category.show_in_menu %}
         <li class="nav-item dropdown">
 
           <a href="{% url 'shop:category_detail' category.id %}" class="btn text-muted">{{category}}</a>
@@ -98,11 +98,16 @@
           </ul>
         </li>
         
-        {% elif category.parent_category == None and not category.category_set.all%}
+        {% elif category.parent_category == None and not category.category_set.all and category.show_in_menu %}
         
           <li class="nav-item"><a class="nav-link" href="{% url 'shop:category_detail' category.id %}"> {{category}} </a></li>
 
+{#        {% elif category.parend_category and category.category_set.all %}#}
+{#            <ul class="dropdown-menu">#}
+{#                {% include 'shop/partial/category_nav_nested.html' %}#}
+{#          </ul>#}
         {% endif %}
+
         {% endfor %}
   </ul>
 
