@@ -49,21 +49,6 @@
       contentType: false,
       success: function(data) {
           window.location.replace('/profile');
-        {#window.localStorage.setItem('refreshToken', data['refresh']);#}
-        {#window.localStorage.setItem('accessToken', data['access'])#}
-        {#window.location = "{% url 'core:profile' %}"#}
-        {#  $.ajax({#}
-        {#      url: {% url 'core_api:profile' %},#}
-        {#      headers: {#}
-        {#          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`#}
-        {#      },#}
-        {#      type: "GET",#}
-        {#      tokenFlag: true,#}
-        {#      success: function (data) {#}
-        {#          console.log(data)#}
-        {#      }, // end success#}
-        {#      error: handleAjaxError#}
-        {#  }) //end ajax#}
       },  //end success
       error: function (rs, e) {
           if (rs.status === 401) {
@@ -74,47 +59,7 @@
     }) //end ajax
   }) //end submit
 
-  function handleAjaxError(rs, e) {
-      if (rs.status === 401) {
-          alert(rs.responseText)
-          if (this.tokenFlag) {
-              this.tokenFlag = false;
-              if (obtainAccessTokenWithRefreshToken()) {
-                  this.headers["Authorization"] = `Token ${localStorage.getItem('accessToken')}`
-                  $.ajax(this);
-              }
-          }
-      } else {
-          console.error(rs.responseText);
-      }
-  }
 
-  function obtainAccessTokenWithRefreshToken() {
-      let flag = true;
-      let formData = new FormData();
-      formData.append('refresh', localStorage.getItem('refresh'))
-      $.ajax({
-          url: "{% url 'core_api:token_refresh' %}",
-          type: "POST",
-          data: formData,
-          async: false,
-          cache: false,
-          processData: false,
-          contentType: false,
-          success: function (data) {
-              localStorage.setItem('accessToken', data['access'])
-          },
-          error: function (rs, e) {
-              if (rs.status === 401) {
-                  flag = false;
-                  window.location.href = "/api/v1/login/";
-              } else {
-                  console.error(rs.responseText);
-              }
-          }
-      });
-      return flag
-  }
 
 </script>
 {% endblock custom_js %}

@@ -18,62 +18,54 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed
 
+from core.utils import send_confirmation_email
 
 import jwt, datetime
-from jwt import exceptions
-
-from core.mixins import JWTRequiredForAuthenticateMixin
-
-from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
+from core.mixins import AuthenticatedAccessDeniedMixin
 
 from .serializers import UserSerializer, UserLoginSerializer, UserRegisterSerializer
 
 
-class RegisterUserAPI(APIView):
+class RegisterUserAPI(AuthenticatedAccessDeniedMixin, APIView):
 
     def get(self, request):
-        PROFILE_URL = reverse('core:profile')
-        if request.user.is_staff or request.user.is_superuser:
-            return redirect(PROFILE_URL)
-
-        if token := request.COOKIES.get('jwt'):
-            try:
-                payload = jwt.decode(token, 'secret', algorithms=['HS256'])
-                user = get_user_model().objects.filter(id=payload['id']).first()
-                if user:
-                    request.user = user
-                    return redirect(PROFILE_URL)
-            except Exception:
-                return render(request, 'core/register.html', {})
         return render(request, 'core/register.html', {})
 
     def post(self, request):
+        # return Response({'key': 'val'}, status=status.HTTP_400_BAD_REQUEST)
         serializer_ = UserRegisterSerializer(data=request.data)
         serializer_.is_valid(raise_exception=True)
         serializer_.save()
+        request.email = serializer_.validated_data['email']
+        # TODO use celery for send email
+        send_confirmation_email(request, serializer_.data['id'])
         return Response(serializer_.data, status=status.HTTP_201_CREATED)
 
+        # print('exception ===========')
+        # response = Response()
+        #
+        # return Response(serializer_.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class LoginAPI(APIView):
+
+class LoginAPI(AuthenticatedAccessDeniedMixin, APIView):
     # authentication_classes = [TokenAuthentication]
     def get(self, request):
-        print(request.user)
-        PROFILE_URL = reverse('core:profile')
-
-        if request.user.is_staff or request.user.is_superuser:
-            return redirect(PROFILE_URL)
-
-        if token := request.COOKIES.get('jwt'):
-            try:
-                payload = jwt.decode(token, 'secret', algorithms=['HS256'])
-                user = get_user_model().objects.filter(id=payload['id']).first()
-                if user:
-                    request.user = user
-                    return redirect(PROFILE_URL)
-            except Exception:
-                return render(request, 'core/login.html', {})
-            # return redirect(PROFILE_URL)
+        # print(request.user)
+        # PROFILE_URL = reverse('core:profile')
+        #
+        # if request.user.is_staff or request.user.is_superuser:
+        #     return redirect(PROFILE_URL)
+        #
+        # if token := request.COOKIES.get('jwt'):
+        #     try:
+        #         payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+        #         user = get_user_model().objects.filter(id=payload['id']).first()
+        #         if user:
+        #             request.user = user
+        #             return redirect(PROFILE_URL)
+        #     except Exception:
+        #         return render(request, 'core/login.html', {})
+        #     # return redirect(PROFILE_URL)
 
         return render(request, 'core/login.html', {})
 
@@ -92,6 +84,9 @@ class LoginAPI(APIView):
             # messages.error(request, 'رمز عبور اشتباه است')
             # raise AuthenticationFailed('incorrect password')
             return Response({'detail': 'رمز عبور اشتباه'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        if not user.is_active:
+            return Response({'detail': 'حساب کاربری شما فعال نیست'}, status=status.HTTP_401_UNAUTHORIZED)
 
         user.last_login = timezone.now()
         user.save()
@@ -154,3 +149,4 @@ class LogoutAPI(APIView):
 #         context = {'user': serializer_.data}
 #         return render(request, 'core/profile.html', context)
 #         # return Response(serializer_.data)
+
