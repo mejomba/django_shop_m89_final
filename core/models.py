@@ -11,6 +11,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.utils import timezone
 from django.utils.html import format_html
+from django.contrib.auth.models import Group
 
 from extension.utils import to_jalali
 
@@ -36,7 +37,8 @@ class UserManager(BaseUserManager):
         user = self.model(email=self.normalize_email(email), **extra_fields)
         
         user.set_password(password)
-        user.role = 'c'
+        # if not user.role:
+        #     user.role = 'c'
         user.save(using=self._db)
 
         return user
@@ -89,6 +91,16 @@ class User(BaseModel, AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
+
+    def save(self, *args, **kwargs):
+        if self.role == 'o':
+            my_group = Group.objects.get(name='ناظر')
+            my_group.user_set.add(self)
+
+        if self.role == 'a':
+            my_group = Group.objects.get(name='ادمین')
+            my_group.user_set.add(self)
+        super(User, self).save(*args, **kwargs)
 
     class Meta:
         verbose_name = 'کاربر'
@@ -158,7 +170,11 @@ class Discount(BaseModel):
     description = models.TextField(verbose_name='توضیحات', max_length=1000, null=True, blank=True)
 
     objects = DescountManager()
-    
+
+    def is_active(self):
+        return self.end_date > timezone.now() and self.start_date < timezone.now() and (self.limit is None or self.limit > 0)
+    is_active.boolean = True
+
     class Meta:
         verbose_name = 'تخفیف'
         verbose_name_plural = 'تخفیف ها'

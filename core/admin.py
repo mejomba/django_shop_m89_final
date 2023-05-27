@@ -39,6 +39,7 @@ class CustomUserAdmin(UserAdmin):
 class AdminAddress(admin.ModelAdmin):
     fields = ('country', 'province', 'city', 'street', 'zip_code', 'pelak', 'full_address', 'user', 'is_deleted')
     list_display = ['country', 'province', 'city', 'jlast_update']
+    list_filter = ['province', 'city']
 
     def get_queryset(self, request):
         return self.model.objects.filter(is_deleted=False)
@@ -54,6 +55,17 @@ class AdminAddress(admin.ModelAdmin):
             address.save()
 
 
+class AdminDiscount(admin.ModelAdmin):
+    exclude = ['delete_data']
+    list_display = ['name', 'code', 'percent', 'mablagh', 'limit', 'jlast_update', 'is_active']
+    list_filter = ['percent', 'mablagh', 'limit']
+
+    def delete_queryset(self, request, queryset):
+        for address in queryset:
+            address.is_deleted = True
+            address.save()
+
+
 admin.site.register(models.User, CustomUserAdmin)
 admin.site.register(models.Address, AdminAddress)
-admin.site.register(models.Discount)
+admin.site.register(models.Discount, AdminDiscount)
