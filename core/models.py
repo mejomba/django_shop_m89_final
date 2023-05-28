@@ -6,7 +6,7 @@ import re
 from django.db.models import Q
 from django.contrib.auth.base_user import BaseUserManager
 from django.conf import settings
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.utils import timezone
@@ -79,7 +79,10 @@ class User(BaseModel, AbstractBaseUser, PermissionsMixin):
 
     USER_ROLE = (('a', 'ادمین'), ('o', 'ناظر'), ('c', 'مشتری'))
     email = models.EmailField(verbose_name='ایمیل', max_length=255, unique=True)
-    phone = models.CharField(verbose_name='شماره تلفن', max_length=11, unique=True, null=True)
+    phone = models.CharField(verbose_name='شماره تلفن', max_length=11, unique=True,
+                             validators=[RegexValidator(r'^09\d{9}',
+                                                        message='تلفن نا معتبر',
+                                                        code='invalid_phone')])
     first_name = models.CharField(verbose_name='نام', max_length=64, null=True)
     last_name = models.CharField(verbose_name='نام خانوادگی', max_length=64, null=True)
     is_active = models.BooleanField(verbose_name='فعال', default=False)

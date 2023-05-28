@@ -67,14 +67,13 @@
             processData: false,
             contentType: false,
             success: function(data) {
-                window.location.replace('/profile');
+                window.location.replace("{% url 'core_api:login' %}");
             },  //end success
             error: function (rs, e) {
                 let data = JSON.parse(rs.responseText)
                 let errorArea = $('#error-area')
                 errorArea.text('')
                 for (let item in data) {
-                    console.log(item)
                     errorArea.append(data[item],"<br>")
                 }
                 if (rs.status === 400) {
