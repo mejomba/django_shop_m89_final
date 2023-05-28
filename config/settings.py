@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'rest_framework_simplejwt',
+    'celery',
 
     # our app
     'core.apps.CoreConfig',
@@ -63,7 +64,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
+    # 'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -166,6 +167,8 @@ AUTH_USER_MODEL = 'core.User'
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
 
+
+# ========== email settings ==========
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_FROM = 'mejomba1@gmail.com'
@@ -173,3 +176,23 @@ EMAIL_HOST_USER = 'mejomba1@gmail.com'
 EMAIL_HOST_PASSWORD = 'pommfofobnouxxsm'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
+
+
+# ========== redis settings ==========
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient"
+        },
+        "KEY_PREFIX": "example"
+    }
+}
+CACHE_TTL = 60 * 15
+
+
+# ========== celery settings ==========
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379/1'
+CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/1'
+CELERY_TIMEZONE = 'UTC'
