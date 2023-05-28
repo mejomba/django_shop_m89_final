@@ -189,10 +189,17 @@ CACHES = {
         "KEY_PREFIX": "example"
     }
 }
-CACHE_TTL = 60 * 15
+CACHE_TTL = 60 * 2
 
 
 # ========== celery settings ==========
 CELERY_BROKER_URL = 'redis://127.0.0.1:6379/1'
 CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/1'
 CELERY_TIMEZONE = 'UTC'
+
+
+# ========== sms settings ==========
+# SMS_PHONE = '983000685995'
+SMS_PHONE = '985000248725'
+SMS_USER = 'mejomba'
+SMS_PASSWORD = 'Aa09360521688'

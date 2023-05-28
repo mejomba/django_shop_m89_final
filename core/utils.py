@@ -1,4 +1,6 @@
-from django.http import HttpResponse
+import time
+
+from django.core.cache import cache
 from django.contrib import messages
 from django.core.mail import EmailMessage
 from django.contrib.auth import get_user_model
@@ -8,7 +10,14 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import force_bytes, force_str
 from django.template.loader import render_to_string
+from django.conf import settings
+from django.core.cache.backends.base import DEFAULT_TIMEOUT
 import six
+import random
+from .raigansms import restfulapi
+
+
+CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
 
 
 class TokenGenerator(PasswordResetTokenGenerator):
@@ -63,3 +72,54 @@ def send_confirmation_email(request, user_id):
     email.send()
     messages.success(request, _('ایمیل فعال سازی برای شما ارسال شد'))
     # return HttpResponse(_('برو ایمیل چک کن'))
+
+
+def send_otp_email(user, otp_code):
+    # user = get_user_model().objects.filter(id=user_id).first()
+    # current_site = get_current_site(request)
+    mail_subject = _('کد ورود یکبار مصرف')
+    context = {
+        'user': user,
+    }
+
+    # msg = render_to_string('core/otp_email.html', context)
+    msg = f"کد ورود شما: {otp_code}"
+    to_email = user.email
+    email = EmailMessage(mail_subject, msg, to=[to_email])
+    email.send()
+    # return HttpResponse(_('برو ایمیل چک کن'))
+
+
+def get_otp_code():
+    return random.randint(1111, 9999)
+
+
+def cache_in_redis(otp_code, user):
+    cache.set(otp_code, user.id, CACHE_TTL)
+
+
+def send_sms(user, otp_code):
+    # phone_number = '983000685995'
+    # phone_number2 = '985000248725'
+    group_id = random.randint(0, 99999999)
+    ws = restfulapi(settings.SMS_USER, settings.SMS_PASSWORD)
+    msg = f'با سلام کد احراز هویت شما \n {otp_code}'
+    res = ws.SendMessage(PhoneNumber=settings.SMS_USER, Message=msg, Mobiles=[user.phone],
+                         UserGroupID=str(group_id), SendDateInTimeStamp=time.time())
+    print(res)
+
+
+def validate_otp():
+    pass
+
+
+def perform_2step_verification(user, auth_type):
+    print('perform 2step ============')
+    otp_code = get_otp_code()
+    cache_in_redis(otp_code, user)
+    if auth_type == 'sms':
+        send_sms(user, otp_code)
+    elif auth_type == 'email':
+        send_otp_email(user, otp_code)
+    print('otp: ', otp_code)
+    print('end perform 2step ==========')
