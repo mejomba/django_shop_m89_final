@@ -36,11 +36,6 @@ class RegisterUserAPI(AuthenticatedAccessDeniedMixin, APIView):
         send_confirmation_email(request, serializer_.data['id'])
         return Response(serializer_.data, status=status.HTTP_201_CREATED)
 
-        # print('exception ===========')
-        # response = Response()
-        #
-        # return Response(serializer_.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 class LoginAPI(AuthenticatedAccessDeniedMixin, APIView):
     def get(self, request):
@@ -54,21 +49,17 @@ class LoginAPI(AuthenticatedAccessDeniedMixin, APIView):
         user = get_user_model().objects.filter(email=email).first()
 
         if user is None:
-            # messages.error(request, 'کاربر با این اطلاعات یافت نشد.')
-            # raise AuthenticationFailed('user not found')
             return Response({'detail': 'کاربر با این مشخصات یافت نشد'}, status=status.HTTP_401_UNAUTHORIZED)
 
         if not user.check_password(password):
-            # messages.error(request, 'رمز عبور اشتباه است')
-            # raise AuthenticationFailed('incorrect password')
             return Response({'detail': 'رمز عبور اشتباه'}, status=status.HTTP_401_UNAUTHORIZED)
 
         if not user.is_active:
             return Response({'detail': 'حساب کاربری شما فعال نیست'}, status=status.HTTP_401_UNAUTHORIZED)
 
-        # generate OTP code and sms to user phone
+        # generate OTP code and send to user
         utils.perform_2step_verification(user, auth_type)
-        return Response({'detail': 'در انتضار تایید کد پیامک شده'}, status.HTTP_200_OK)
+        return Response({'detail': 'در انتظار تایید کد ارسال شده'}, status.HTTP_200_OK)
 
 
 class LoginVerification(AuthenticatedAccessDeniedMixin, APIView):
@@ -102,7 +93,6 @@ class LoginVerification(AuthenticatedAccessDeniedMixin, APIView):
 
 class LogoutAPI(APIView):
     def post(self, request):
-        # response = Response()
         landing_page = reverse('shop:landing_page')
         response = HttpResponseRedirect(landing_page)
         response.delete_cookie('jwt')
@@ -114,8 +104,6 @@ class LogoutAPI(APIView):
             logout(request)  # logout staff user
 
         return response
-        # return redirect('shop:landing_page')
-        # landing_page = reverse('shop:landing_page')
-        # return HttpResponseRedirect(redirect_to=landing_page)
+
 
 
