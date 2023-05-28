@@ -63,6 +63,9 @@ class LoginAPI(AuthenticatedAccessDeniedMixin, APIView):
 
 
 class LoginVerification(AuthenticatedAccessDeniedMixin, APIView):
+    def get(self, request):
+        return render(request, 'core/login.html', {})
+
     def post(self, request):
         otp_code = request.POST.get('otp_code')
         user_id = cache.get(otp_code)
