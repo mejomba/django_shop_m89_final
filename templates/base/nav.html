@@ -4,14 +4,15 @@
     /// some script
     
     // jquery ready start
-    $(document).ready(function() {
+    window.addEventListener('DOMContentLoaded', function (){
+        $(document).ready(function() {
       // jQuery code
-    
+
       //////////////////////// Prevent closing from click inside dropdown
         $(document).on('click', '.dropdown-menu', function (e) {
           e.stopPropagation();
         });
-    
+
         // make it as accordion for smaller screens
         if ($(window).width() < 992) {
           $('.dropdown-menu a').click(function(e){
@@ -24,8 +25,10 @@
           })
           });
       }
-      
+
     }); // jquery end
+    })
+
     </script>
 
     <style type="text/css">
@@ -69,8 +72,8 @@
 {#          <a href="{% url 'core_api:register' %}" class="btn btn-warning">سبد خرید</a>#}
            <a href="{% url 'core:profile' %}" class="btn btn-success ">پروفایل</a>
         {% else %}
-            <a href="{% url 'core_api:register' %}" class="btn btn-warning">ثبت نام</a>
-            <a href="{% url 'core_api:login' %}" class="btn btn-success ">ورود</a>
+            <a href="{% url 'core:register_view' %}" class="btn btn-warning">ثبت نام</a>
+            <a href="{% url 'core:login_view' %}" class="btn btn-success ">ورود</a>
         {% endif %}
 
     </div>
@@ -111,7 +114,15 @@
         {% endfor %}
   </ul>
 
-        <a href="#">سبد خرید</a>
+
+
+{#        <a href="{% url 'order:cart2' request.user.cart.id  %}" id="cart-nav-btn">#}
+        <a href="{% url 'shop_api:cart2'  %}" id="cart-nav-btn">
+            <span class="px-3 py-2 mx-1 badge badge-warning" id="cart-item-count" ></span>
+        سبد خرید
+        </a>
+
+
     <form class="form-inline my-2 my-lg-0">
       <input class="form-control mr-sm-2" type="search" placeholder="نام محصول یا دسته بندی" aria-label="Search">
       <button class="btn btn-outline-success my-2 my-sm-0" type="submit">جستجو</button>
