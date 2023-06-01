@@ -1,5 +1,6 @@
 {% load static %}
 {% load custom_tags %}
+
 <!DOCTYPE html>
 <html lang="fa-ir">
 <head>
@@ -26,6 +27,8 @@
 
     {% include "base/footer.html" %}
 
+
+
     <!--<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous"></script>
@@ -33,6 +36,86 @@
     <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
     <script src="{% static 'base/js/jquery.waypoints.min.js' %}"></script>
     <script src="{% static 'base/js/infinite.min.js' %}"></script>
+
+    <script>
+
+function getCookie(c_name)
+    {
+        if (document.cookie.length > 0)
+        {
+            c_start = document.cookie.indexOf(c_name + "=");
+            if (c_start != -1)
+            {
+                c_start = c_start + c_name.length + 1;
+                c_end = document.cookie.indexOf(";", c_start);
+                if (c_end == -1) c_end = document.cookie.length;
+                return unescape(document.cookie.substring(c_start,c_end));
+            }
+        }
+        return "";
+     }
+
+        function countSum(itemSet){
+                let sum_ = 0;
+                for (item of itemSet){
+                    sum_ += item.count
+                }
+                return sum_
+            }
+        window.addEventListener('DOMContentLoaded', function (event){
+            let addProduct = $('#add-product');
+            let updateCart = $('#update-cart');
+            let itemCount = $('#item-count');
+            let deleteCartItem = $('#delete-cart-item');
+            $.ajax({
+                url: '/api/v1/cart/1',
+                type: "GET",
+                dataType: 'json',
+                cache: false,
+                processData: false,
+                contentType: false,
+                success: function (data) {
+                    console.log(data)
+                    console.log(data.id)
+                    console.log('success... GET')
+                    if (data.cartitem_set){
+                        $('#cart-item-count').text(countSum(data.cartitem_set))
+                    }
+                },
+                error: function (rs, e) {
+                    console.log('error.....')
+                    console.log(rs)
+                }
+            }) // end ajax
+
+            let cartNavBtn = $('#cart-nav-btn');
+            cartNavBtn.click(function (e){
+                e.preventDefault();
+                $.ajax({
+                    url: cartNavBtn.attr('href'),
+                    type: 'GET',
+                    dataType: 'json',
+                    cache: false,
+                    processData: false,
+                    contentType: false,
+                    success: function (data) {
+                        console.log(data.redirect)
+                        console.log('success... GET')
+                        localStorage.setItem('cart', JSON.stringify(data))
+                        window.location = '/profile/'
+                        //console.log('profile......', data)
+                    },
+                    error: function (rs, e) {
+                        console.log('error.....')
+                        window.location = '/login/'
+                        console.log(rs.responseText)
+                        console.log(rs)
+                    }
+                }) // end ajax
+            })
+        })
+    </script>
+
     {% block custom_js %} {% endblock %}
 </body>
 </html>
