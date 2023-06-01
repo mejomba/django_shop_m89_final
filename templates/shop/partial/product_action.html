@@ -1,3 +1,4 @@
+{% load custom_tags %}
 <div class="border py-3 bg-0">
 <div class="d-flex justify-content-around align-items-center">
     <span>برند</span>
@@ -32,7 +33,229 @@
     </div>
     {% endif %}
 
-    <div class="my-4 d-flex justify-content-around">
-        <button class="btn btn-success">افزودن به سبد خرید</button>
+    <!-- update form -->
+<form action="{% url 'shop_api:cart' product.id %}" method="POST" class="my-4 d-flex justify-content-around" id="update-cart-item-form">
+    {% csrf_token %}
+    <div class="input-group mb-3 ltr d-none" id="update-cart" style="width: 7rem">
+      <div class="input-group-prepend">
+          <input type="submit" value="-" class="btn btn-danger" id="remove-one" />
+      </div>
+      <span type="text" class="form-control text-center" id="item-count"></span>
+      <div class="input-group-append">
+            <input type="submit" value="+" class="btn btn-success" id="add-one" />
+      </div>
     </div>
+</form>
+<div class="text-danger text-center" id="error-area"></div>
+    <!-- add form -->
+<form action="{% url 'shop_api:cart' product.id %}" class="my-4 d-flex justify-content-around" id="add-to-cart-form" method="POST">
+    {% csrf_token %}
+    <input type="submit" name="add_product" id="add-product" value="افزودن به سبد خرید" class="btn btn-success" />
+</form>
+    <!-- delete form -->
+<form action="{% url 'shop_api:cart' product.id %}" class="my-4 d-flex justify-content-around" id="delete-cart-item-form" method="DELETE">
+    {% csrf_token %}
+    <input type="submit" name="add_product" id="delete-cart-item" value="حذف از سبد" class="btn btn-danger d-none" />
+</form>
+
 </div>
+
+
+
+<script>
+
+function getCookie(c_name)
+    {
+        if (document.cookie.length > 0)
+        {
+            c_start = document.cookie.indexOf(c_name + "=");
+            if (c_start != -1)
+            {
+                c_start = c_start + c_name.length + 1;
+                c_end = document.cookie.indexOf(";", c_start);
+                if (c_end == -1) c_end = document.cookie.length;
+                return unescape(document.cookie.substring(c_start,c_end));
+            }
+        }
+        return "";
+     }
+
+
+     window.addEventListener('load', function (){
+         let addProduct = $('#add-product');
+         let updateCart = $('#update-cart');
+         let itemCount = $('#item-count');
+         let deleteCartItem = $('#delete-cart-item');
+          $.ajax({
+                url: $('#add-to-cart-form').attr('action'),
+                type: "GET",
+                dataType: 'json',
+                cache: false,
+                processData: false,
+                contentType: false,
+                success: function (data) {
+                    console.log(data)
+                    console.log('success... GET')
+                    if (data.cartitem_set){
+                        $('#cart-item-count').text(countSum(data.cartitem_set))
+                        for (let cartItem of data.cartitem_set) {
+                            console.log(cartItem.product.id)
+                            console.log(data.current_product.id)
+                            console.log(cartItem.product.id == data.current_product.id)
+                            if (cartItem.product.id == data.current_product.id){
+                                console.log(cartItem)
+                                addProduct.addClass('d-none');
+                                updateCart.removeClass('d-none');
+                                itemCount.text(cartItem.count)
+                                deleteCartItem.removeClass('d-none')
+                            }
+                        }
+                    }
+                },
+                error: function (rs, e) {
+                    console.log('error.....')
+                    console.log(rs)
+                }
+            }) // end ajax
+     })
+
+     window.addEventListener('DOMContentLoaded', function (){
+         let addProduct = $('#add-product');
+         let updateCart = $('#update-cart')
+         let itemCount = $('#item-count');
+         let cartItemCount = $('#cart-item-count')
+         let deleteCartItem = $('#delete-cart-item');
+         $(document).ready(function (){
+          // add product to cart item for first
+          $('#add-to-cart-form').submit(function(event) {
+            event.preventDefault();
+            let formData = new FormData();
+            formData.append('add_product', $('#add-product').val().trim())
+            $.ajax({
+                url: $('#add-to-cart-form').attr('action'),
+                type: "POST",
+                data: formData,
+                headers: { "X-CSRFToken": getCookie('csrftoken') },
+                dataType: 'json',
+                cache: false,
+                processData: false,
+                contentType: false,
+                success: function (data) {
+                    console.log(data)
+                    cartItemCount.removeClass('d-none')
+                    cartItemCount.text(countSum(data.cartitem_set))
+                    addProduct.addClass('d-none');
+                    updateCart.removeClass('d-none');
+                    itemCount.text('1');
+                    deleteCartItem.removeClass('d-none')
+                    console.log('success... POST')
+
+                },
+                error: function (rs, e) {
+                    console.log('error.....')
+                    console.log(rs)
+                }
+            }) // end ajax
+          }) // end submit add-to-cart-form
+
+         // delete cart item
+         $('#delete-cart-item-form').submit(function(event) {
+         event.preventDefault();
+         let formData = new FormData();
+         formData.append('delete_product', $('#delete-cart-item').val().trim())
+         $.ajax({
+             url: $('#delete-cart-item-form').attr('action'),
+             type: "DELETE",
+             data: formData,
+             headers: { "X-CSRFToken": getCookie('csrftoken') },
+             dataType: 'json',
+             cache: false,
+             processData: false,
+             contentType: false,
+             success: function (data) {
+                 cartItemCount.text(cartItemCount.text() - 1)
+                 addProduct.removeClass('d-none');
+                 updateCart.addClass('d-none');
+                 itemCount.text('');
+                 $('#error-area').text('')
+                 deleteCartItem.addClass('d-none')
+                 console.log('success... DELETE')
+
+             },
+             error: function (rs, e) {
+                 console.log('error.....')
+                 console.log(rs)
+             }
+         }) // end ajax
+       }) // end submit delete-cart-item-form
+
+             let submitter = "";
+             $('#update-cart-item-form input:submit').click(function (e){
+                     submitter = $(this).attr("value")
+                 })
+
+             $('#update-cart-item-form').submit(function(event) {
+                 event.preventDefault();
+                 console.log('form submit with', submitter)
+                     event.preventDefault();
+                     let formData = new FormData();
+                     formData.append('action', submitter);
+                     $.ajax({
+                         url: $('#update-cart-item-form').attr('action'),
+                         type: "PATCH",
+                         data: formData,
+                         headers: { "X-CSRFToken": getCookie('csrftoken') },
+                         dataType: 'json',
+                         cache: false,
+                         processData: false,
+                         contentType: false,
+                         success: function (data,  textStatus, xhr) {
+                             if (xhr.status === 206) {
+                                 if (data.cartitem_set){
+                                     cartItemCount.text(countSum(data.cartitem_set))
+                                    for (let cartItem of data.cartitem_set) {
+                                        if (cartItem.product.id == data.current_product.id){
+                                            addProduct.addClass('d-none');
+                                            updateCart.removeClass('d-none');
+                                            console.log(cartItem)
+                                            itemCount.text(cartItem.count)
+                                            deleteCartItem.removeClass('d-none')
+                                            console.log(cartItem.count, ' update cart item count=========')
+                                            }
+                                        }
+                                    }
+                                 $('#error-area').text('')
+                                 console.log('status 206 success... PATCH update')
+                             }
+                             if (xhr.status === 204) {
+                                 cartItemCount.text(cartItemCount.text() - 1)
+                                 addProduct.removeClass('d-none');
+                                 updateCart.addClass('d-none');
+                                 itemCount.text('');
+                                 $('#error-area').text('')
+                                 deleteCartItem.addClass('d-none')
+                                 console.log('status 204 success... PATCH remove')
+                             }
+
+                         },
+                         error: function (rs, e) {
+                             if (rs.status === 404) {
+                                 console.log('status 404')
+                                 let data = JSON.parse(rs.responseText)
+                                 $('#error-area').text(data.detail)
+                             }
+                             if (rs.status === 400) {
+
+                                 console.log('status 400')
+                             }
+                             console.log('error.....')
+                             console.log(rs)
+                         }
+                     }) // end ajax
+                   }) // end submit remove-one
+
+         //}) // end on click
+        }) // end ready
+     }) // end DomContentLoaded
+
+    </script>
