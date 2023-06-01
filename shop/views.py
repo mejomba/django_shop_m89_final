@@ -10,8 +10,11 @@ def landing_page(request):
     discounts = models.Discount.objects.active()
     categories = models.Category.objects.filter(parent_category=None)
 
-    products_list = [discount.product_discount_related_name.all().distinct() for discount in discounts]
-    products = products_list[0].union(*products_list)
+    if discounts:
+        products_list = [discount.product_discount_related_name.all().distinct() for discount in discounts]
+        products = products_list[0].union(*products_list)
+    else:
+        products = []
 
     last_products = models.Product.objects.all().order_by('-create_at')[:4]
     
