@@ -39,7 +39,7 @@
       <input type="submit" value="ورود" class="btn btn-success w-100">
       <div class="mt-4 d-flex justify-content-around">
         <span>حساب کاربری ندارید؟ </span>
-        <a href="{% url 'core_api:register' %}" class="text-warning">ثبت نام کنید</a><br>
+        <a href="{% url 'core:register_view' %}" class="text-warning">ثبت نام کنید</a><br>
       </div>
     </form>
 
@@ -60,14 +60,12 @@
                <div class="single-timer">
                 <div>
                  <h4 class="minutes">0</h4>
-                 <span>دقیقه</span>
                 </div>
                </div>
 :
                <div class="single-timer">
                 <div>
                  <h4 class="seconds">0</h4>
-                 <span>ثانیه</span>
                 </div>
                </div>
 
@@ -104,7 +102,6 @@ var futureTime;
           $('#login-form').addClass('d-none')
           otpForm.removeClass('d-none')
           console.log(data)
-          {#let msg = JSON.parse(data)#}
           $('#otp-header').text(data.detail)
           today = new Date();
           futureTime = today.setMinutes(today.getMinutes() + 2);
@@ -133,6 +130,7 @@ var futureTime;
           contentType: false,
           processData: false,
           success: function (data){
+              console.log(document.referrer)
               window.location.href = '/profile/'
           },
           error: function (rs, e) {

@@ -1,9 +1,9 @@
 from django.shortcuts import render
 from django.views import generic
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.http import HttpResponseRedirect
 from django.contrib.auth import get_user_model
-from django.contrib.auth.decorators import login_required
-from django.template.loader import get_template
+from django.contrib.auth import logout
+from django.shortcuts import reverse
 
 from rest_framework import status
 from rest_framework.views import APIView
@@ -65,3 +65,23 @@ def activate(request, uidb64, token):
     else:
         messages.error(request, _('لینک فعال سازی منقضی شده مجدد درخواست لینک فعال سازی بدهید'))
         return redirect('shop:landing_page')
+
+
+def admin_logout(request):
+    print('admin logout ==========')
+    if request.user.is_staff:
+        HOME_URL = reverse('shop:landing_page')
+        logout(request)
+        response = HttpResponseRedirect(HOME_URL)
+        response.delete_cookie('jwt')
+        return response
+
+
+class Register(generic.View):
+    def get(self, request):
+        return render(request, 'core/register.html', {})
+
+
+class LoginView(generic.View):
+    def get(self, request):
+        return render(request, 'core/login.html', {})

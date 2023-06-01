@@ -67,6 +67,7 @@ def send_confirmation_email(request, user_id):
     }
 
     msg = render_to_string('core/account_activation_email.html', context)
+    print(msg)
     to_email = request.email
     email = EmailMessage(mail_subject, msg, to=[to_email])
     email.send()
@@ -107,10 +108,6 @@ def send_sms(user, otp_code):
     res = ws.SendMessage(PhoneNumber=settings.SMS_USER, Message=msg, Mobiles=[user.phone],
                          UserGroupID=str(group_id), SendDateInTimeStamp=time.time())
     print(res)
-
-
-def validate_otp():
-    pass
 
 
 def perform_2step_verification(user, auth_type):
