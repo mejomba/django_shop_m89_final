@@ -1,8 +1,9 @@
-from django.urls import path
+from django.urls import path, include
 from . import views
 
 
 app_name = 'shop'
+
 urlpatterns = [
     path('', views.landing_page, name='landing_page'),
     path('product/', views.ProductListView.as_view(), name='product_list'),
