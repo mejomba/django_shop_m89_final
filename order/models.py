@@ -23,6 +23,15 @@ class Cart(BaseModel):
         verbose_name = 'سبد خرید'
         verbose_name_plural = 'سبد خرید ها'
 
+    def get_cart_total_price(self):
+        cart_item = self.cartitem_set.filter(is_deleted=False)
+        total_price = 0
+        for item in cart_item:
+            price = item.product.get_final_price() * item.count
+            total_price += price
+
+        return int(total_price)
+
     def __str__(self):
         return f'{self.user}'
 
@@ -63,8 +72,23 @@ class Order(BaseModel):
     status = models.CharField(choices=ORDER_STATUS, max_length=1, verbose_name='وضعیت', default='1')
     shipping = models.CharField(choices=SHIPPING_METHOD, max_length=1, verbose_name='روش ارسال', default='1')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    address = models.ForeignKey(Address, on_delete=models.CASCADE)
+    address = models.ForeignKey(Address, on_delete=models.CASCADE, null=True, blank=True)
     time_for_pay = models.DateTimeField(verbose_name='زمال مجاز برای پرداخت', null=True, blank=True)
+
+    def get_order_total_price(self):
+        cart_item = self.orderitem_set.filter(is_deleted=False)
+        total_price = 0
+        for item in cart_item:
+            price = item.product.get_final_price() * item.count
+            total_price += price
+
+        return int(total_price)
+
+    # def get_status_display(self):
+    #     return self.status
+    #
+    # def get_shipping_display(self):
+    #     return self.shipping
 
     class Meta:
         verbose_name = 'سفارش'
