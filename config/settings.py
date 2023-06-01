@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
 
     # third party
     # 'prettyjson',
@@ -129,7 +130,11 @@ AUTH_PASSWORD_VALIDATORS = [
 #         'rest_framework_simplejwt.authentication.JWTAuthentication',
 #     ),
 # }
-
+# REST_FRAMEWORK = {
+#     'DEFAULT_AUTHENTICATION_CLASSES': [
+#         'rest_framework.authentication.TokenAuthentication',
+#     ]
+# }
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
 
@@ -139,8 +144,11 @@ TIME_ZONE = 'Asia/Tehran'
 
 USE_I18N = True
 
+USE_L10N = True
+
 USE_TZ = True
 
+USE_THOUSAND_SEPARATOR = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
@@ -156,7 +164,7 @@ STATICFILES_DIRS = [
 MEDIA_URL = '/uploads/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads')
 
-LOGIN_URL = '/api/v1/login'
+LOGIN_URL = '/api/v1/login/'
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
