@@ -11,7 +11,7 @@
             {% show_product_basic_info product %}
         </div>
         <div class="col-md-3 mt-xl-5">
-            {% show_product_action product %}
+            {% show_product_action request product %}
         </div>
     </div>
     
@@ -21,7 +21,7 @@
         </div>
         <div class="col-md-3 vh-100">
             <div style="position: sticky; position: -webkit-sticky; left:0; top:100px;">
-                {% show_product_action product %}
+{#                {% show_product_action request product %}#}
             </div>
         </div>
     </div>
@@ -58,3 +58,13 @@
     </div>
 </div>
 {% endblock content %}
+
+{% block custom_js %}
+
+<script>
+
+
+
+    </script>
+
+{% endblock %}
