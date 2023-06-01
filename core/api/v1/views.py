@@ -15,17 +15,18 @@ from rest_framework.response import Response
 from core.utils import send_confirmation_email
 
 import jwt, datetime
-from core.mixins import AuthenticatedAccessDeniedMixin
+from core.mixins import AuthenticatedAccessDeniedMixin, JWTRequiredForAuthenticateMixin, StaffOrJwtLoginRequiredMixin, \
+    ProfileAuthorMixin
 
-from .serializers import UserSerializer, UserLoginSerializer, UserRegisterSerializer
+from .serializers import UserSerializer, UserLoginSerializer, UserRegisterSerializer, UserUpdateSerializer
 
 from core import utils
 
 
 class RegisterUserAPI(AuthenticatedAccessDeniedMixin, APIView):
 
-    def get(self, request):
-        return render(request, 'core/register.html', {})
+    # def get(self, request):
+    #     return render(request, 'core/register.html', {})
 
     def post(self, request):
         serializer_ = UserRegisterSerializer(data=request.data)
@@ -67,6 +68,7 @@ class LoginVerification(AuthenticatedAccessDeniedMixin, APIView):
         return render(request, 'core/login.html', {})
 
     def post(self, request):
+        print('================', request.META.get('HTTP_REFERER'))
         otp_code = request.POST.get('otp_code')
         user_id = cache.get(otp_code)
         if not user_id:
@@ -109,4 +111,15 @@ class LogoutAPI(APIView):
         return response
 
 
+class EditProfileAPI(ProfileAuthorMixin, APIView):
 
+    def get(self, request):
+        serializer_ = UserSerializer(instance=request.user)
+        return Response(serializer_.data)
+
+    def patch(self, request):
+        user = request.user
+        serializer_ = UserUpdateSerializer(user, data=request.data)
+        serializer_.is_valid(raise_exception=True)
+        serializer_.save()
+        return Response(serializer_.data)

@@ -12,4 +12,5 @@ urlpatterns = [
     path('v1/login/verify/', views.LoginVerification.as_view(), name='login_verify'),
     path('v1/logout/', views.LogoutAPI.as_view(), name='logout'),
     path('v1/login/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('v1/profile/edit/<int:pk>/', views.EditProfileAPI.as_view(), name='edit_profile'),
 ]
