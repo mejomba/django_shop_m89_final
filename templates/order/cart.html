@@ -1,0 +1,51 @@
+{% extends 'base/base.html' %}
+{% load humanize %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mt-10">
+        <div class="col-md-9 col">
+
+            {% for cart_item in cart.cartitem_set.all %}
+                <div class="d-flex flex-wrap my-2 border rounded p-1 shadow-sm">
+                    <div class="">
+                        <img src="{{ cart_item.product.thumbnail.url }}" alt="" width="200">
+                    </div>
+                    <div class="mr-3">
+                        <h4>{{ cart_item.product.name }}</h4>
+                        <h5 class="badge badge-primary">{{ cart_item.product.brand }}</h5>
+                        <div class="mt-4">
+                            <p class="my-1">
+                                <span>قیمت</span>
+                                <span>{{ cart_item.product.price|intcomma }}</span>
+                            </p>
+                            <p class="my-1">
+                                <span>قیمت با تخفیف</span>
+                                <span>{{ cart_item.product.get_price_apply_discount|intcomma }}</span>
+                            </p>
+                            <p class="my-1">
+                                <span>قیمت نهایی با احتساب مالیات</span>
+                                <span>{{ cart_item.product.get_final_price | intcomma}}</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+
+        </div>
+        <div class="col-md-3 col">
+            <div class="text-center border rounded p-2 bg-white">
+                <p>
+                    <span>جمع قیمت</span>
+                    <span>{{ cart.get_cart_total_price|intcomma }}</span>
+                </p>
+                <form action="{% url 'order:cart_to_order' cart.id %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary">ثبت سفارش</button>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -6,11 +6,12 @@ import re
 from django.db.models import Q
 from django.contrib.auth.base_user import BaseUserManager
 from django.conf import settings
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.utils import timezone
 from django.utils.html import format_html
+from django.contrib.auth.models import Group
 
 from extension.utils import to_jalali
 
@@ -36,14 +37,17 @@ class UserManager(BaseUserManager):
         user = self.model(email=self.normalize_email(email), **extra_fields)
         
         user.set_password(password)
-        user.role = 'c'
+        # if not user.role:
+        #     user.role = 'c'
         user.save(using=self._db)
 
         return user
 
-    def create_superuser(self, email, password):
+    def create_superuser(self, email, password, **extra):
         """create and save new superuser"""
-        user = self.create_user(email, password)
+        phone = input('phone: ')
+        extra.update({'phone': phone})
+        user = self.create_user(email, password, **extra)
         user.is_staff = True
         user.is_superuser = True
         user.is_active = True
@@ -77,7 +81,10 @@ class User(BaseModel, AbstractBaseUser, PermissionsMixin):
 
     USER_ROLE = (('a', 'ادمین'), ('o', 'ناظر'), ('c', 'مشتری'))
     email = models.EmailField(verbose_name='ایمیل', max_length=255, unique=True)
-    phone = models.CharField(verbose_name='شماره تلفن', max_length=11, unique=True, null=True)
+    phone = models.CharField(verbose_name='شماره تلفن', max_length=11, unique=True,
+                             validators=[RegexValidator(r'^09\d{9}',
+                                                        message='تلفن نا معتبر',
+                                                        code='invalid_phone')])
     first_name = models.CharField(verbose_name='نام', max_length=64, null=True)
     last_name = models.CharField(verbose_name='نام خانوادگی', max_length=64, null=True)
     is_active = models.BooleanField(verbose_name='فعال', default=False)
@@ -89,6 +96,16 @@ class User(BaseModel, AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
+
+    def save(self, *args, **kwargs):
+        if self.role == 'o':
+            my_group = Group.objects.get(name='ناظر')
+            my_group.user_set.add(self)
+
+        if self.role == 'a':
+            my_group = Group.objects.get(name='ادمین')
+            my_group.user_set.add(self)
+        super(User, self).save(*args, **kwargs)
 
     class Meta:
         verbose_name = 'کاربر'
@@ -158,7 +175,11 @@ class Discount(BaseModel):
     description = models.TextField(verbose_name='توضیحات', max_length=1000, null=True, blank=True)
 
     objects = DescountManager()
-    
+
+    def is_active(self):
+        return self.end_date > timezone.now() and self.start_date < timezone.now() and (self.limit is None or self.limit > 0)
+    is_active.boolean = True
+
     class Meta:
         verbose_name = 'تخفیف'
         verbose_name_plural = 'تخفیف ها'

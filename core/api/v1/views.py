@@ -1,123 +1,103 @@
 from django.utils import timezone
 
-from django.contrib.auth.mixins import UserPassesTestMixin
 from django.contrib.auth import get_user_model, login, logout
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.template.loader import get_template
 from django.contrib import messages
-
+from django.core.cache import cache
 from rest_framework import status
-from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.renderers import TemplateHTMLRenderer
-from rest_framework.authentication import TokenAuthentication
 from rest_framework.reverse import reverse
 from rest_framework.views import APIView
 from rest_framework import viewsets
 from rest_framework.response import Response
-from rest_framework.exceptions import AuthenticationFailed
 
+from core.utils import send_confirmation_email
 
 import jwt, datetime
-from jwt import exceptions
+from core.mixins import AuthenticatedAccessDeniedMixin, JWTRequiredForAuthenticateMixin, StaffOrJwtLoginRequiredMixin, \
+    ProfileAuthorMixin
 
-from core.mixins import JWTRequiredForAuthenticateMixin
+from .serializers import UserSerializer, UserLoginSerializer, UserRegisterSerializer, UserUpdateSerializer
 
-from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
-
-from .serializers import UserSerializer, UserLoginSerializer, UserRegisterSerializer
+from core import utils
 
 
-class RegisterUserAPI(APIView):
+class RegisterUserAPI(AuthenticatedAccessDeniedMixin, APIView):
 
-    def get(self, request):
-        PROFILE_URL = reverse('core:profile')
-        if request.user.is_staff or request.user.is_superuser:
-            return redirect(PROFILE_URL)
-
-        if token := request.COOKIES.get('jwt'):
-            try:
-                payload = jwt.decode(token, 'secret', algorithms=['HS256'])
-                user = get_user_model().objects.filter(id=payload['id']).first()
-                if user:
-                    request.user = user
-                    return redirect(PROFILE_URL)
-            except Exception:
-                return render(request, 'core/register.html', {})
-        return render(request, 'core/register.html', {})
+    # def get(self, request):
+    #     return render(request, 'core/register.html', {})
 
     def post(self, request):
         serializer_ = UserRegisterSerializer(data=request.data)
         serializer_.is_valid(raise_exception=True)
         serializer_.save()
+        request.email = serializer_.validated_data['email']
+        # TODO use celery for send email
+        send_confirmation_email(request, serializer_.data['id'])
         return Response(serializer_.data, status=status.HTTP_201_CREATED)
 
 
-class LoginAPI(APIView):
-    # authentication_classes = [TokenAuthentication]
+class LoginAPI(AuthenticatedAccessDeniedMixin, APIView):
     def get(self, request):
-        print(request.user)
-        PROFILE_URL = reverse('core:profile')
-
-        if request.user.is_staff or request.user.is_superuser:
-            return redirect(PROFILE_URL)
-
-        if token := request.COOKIES.get('jwt'):
-            try:
-                payload = jwt.decode(token, 'secret', algorithms=['HS256'])
-                user = get_user_model().objects.filter(id=payload['id']).first()
-                if user:
-                    request.user = user
-                    return redirect(PROFILE_URL)
-            except Exception:
-                return render(request, 'core/login.html', {})
-            # return redirect(PROFILE_URL)
-
         return render(request, 'core/login.html', {})
 
     def post(self, request, *args, **kwargs):
         email = request.POST.get('email')
         password = request.POST.get('password')
+        auth_type = request.POST.get('auth_type')
 
         user = get_user_model().objects.filter(email=email).first()
 
         if user is None:
-            # messages.error(request, 'کاربر با این اطلاعات یافت نشد.')
-            # raise AuthenticationFailed('user not found')
             return Response({'detail': 'کاربر با این مشخصات یافت نشد'}, status=status.HTTP_401_UNAUTHORIZED)
 
         if not user.check_password(password):
-            # messages.error(request, 'رمز عبور اشتباه است')
-            # raise AuthenticationFailed('incorrect password')
             return Response({'detail': 'رمز عبور اشتباه'}, status=status.HTTP_401_UNAUTHORIZED)
 
-        user.last_login = timezone.now()
-        user.save()
+        if not user.is_active:
+            return Response({'detail': 'حساب کاربری شما فعال نیست'}, status=status.HTTP_401_UNAUTHORIZED)
 
-        payload = {
-            'id': user.id,
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=10),
-            'iat': datetime.datetime.utcnow()
-        }
+        # generate OTP code and send to user
+        utils.perform_2step_verification(user, auth_type)
+        return Response({'detail': 'در انتظار تایید کد ارسال شده'}, status.HTTP_200_OK)
 
-        # token = jwt.encode(payload, 'secret', algorithm='HS256').decode('utf-8')
-        token = jwt.encode(payload, 'secret', algorithm='HS256')
-        response = Response()
 
-        response.set_cookie(key='jwt', value=token, httponly=True)
+class LoginVerification(AuthenticatedAccessDeniedMixin, APIView):
+    def get(self, request):
+        return render(request, 'core/login.html', {})
 
-        # login(request, user)  # login with django for django login required views
-        response.data = {
-            'jwt': token
-        }
-        return response
+    def post(self, request):
+        print('================', request.META.get('HTTP_REFERER'))
+        otp_code = request.POST.get('otp_code')
+        user_id = cache.get(otp_code)
+        if not user_id:
+            return Response({'detail': 'کد وارد شده اشتباه است یا منقضی شده'}, status.HTTP_401_UNAUTHORIZED)
+
+        user = get_user_model().objects.filter(pk=user_id).first()
+        if user:
+            user.last_login = timezone.now()
+            user.save()
+
+            payload = {
+                'id': user.id,
+                'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=10),
+                'iat': datetime.datetime.utcnow()
+            }
+
+            token = jwt.encode(payload, 'secret', algorithm='HS256')
+
+            response = Response()
+            response.set_cookie(key='jwt', value=token, httponly=True)
+            response.data = {
+                'jwt': token
+            }
+            return response
+        return Response({'detail': "خطای ناشناخته"}, status.HTTP_401_UNAUTHORIZED)
 
 
 class LogoutAPI(APIView):
     def post(self, request):
-        # response = Response()
         landing_page = reverse('shop:landing_page')
         response = HttpResponseRedirect(landing_page)
         response.delete_cookie('jwt')
@@ -129,28 +109,17 @@ class LogoutAPI(APIView):
             logout(request)  # logout staff user
 
         return response
-        # return redirect('shop:landing_page')
-        # landing_page = reverse('shop:landing_page')
-        # return HttpResponseRedirect(redirect_to=landing_page)
 
 
-# class Profile(APIView):
-#     def get(self, request):
-#         token = request.COOKIES.get('token')
-#         context = {}
-#
-#         if not token:
-#             return render(request, 'core/login.html', context)
-#
-#         try:
-#             payload = jwt.decode(token, 'secret', algorithms=['HS256'])
-#         except jwt.ExpiredSignatureError:
-#             return render(request, 'core/login.html', context)
-#         except Exception:
-#             return Http404
-#
-#         user = get_user_model().objects.filter(id=payload['id']).first()
-#         serializer_ = UserSerializer(user)
-#         context = {'user': serializer_.data}
-#         return render(request, 'core/profile.html', context)
-#         # return Response(serializer_.data)
+class EditProfileAPI(ProfileAuthorMixin, APIView):
+
+    def get(self, request):
+        serializer_ = UserSerializer(instance=request.user)
+        return Response(serializer_.data)
+
+    def patch(self, request):
+        user = request.user
+        serializer_ = UserUpdateSerializer(user, data=request.data)
+        serializer_.is_valid(raise_exception=True)
+        serializer_.save()
+        return Response(serializer_.data)

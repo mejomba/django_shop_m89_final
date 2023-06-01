@@ -3,10 +3,25 @@
 
 {% block content %}
 
+     <div class="container my-5">
+        <h2 class="text-center p-4">آخرین محصولات</h2>
+        <div class="row">
+            {% for last_product in last_products %}
+                {% include 'base/single_product.html' with product=last_product %}
+            {% endfor %}
+        </div>
+
+        <div class="d-flex justify-content-center mt-3">
+            <a href="{% url 'shop:product_list' %}" class="btn btn-warning">مشاهده محصولات بیشتر</a>
+        </div>
+    </div>
+    <hr/>
+
+
 {% include "base/magic_sale.html" with magicsale=magicsale %}
 
 {% include "base/discount.html" %}
-    
+
     <div class="container my-5">
         <h2 class="text-center p-4">دسته های اصلی</h2>
         <div class="row">
@@ -23,7 +38,7 @@
 
         </div>
         <div class="d-flex justify-content-center mt-3">
-            <a href="#" class="btn btn-warning">مشاهده همه دسته ها </a>
+            <a href="{% url 'shop:category_list' %}" class="btn btn-warning">مشاهده همه دسته ها </a>
         </div>
     </div>
     <hr/>

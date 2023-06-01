@@ -14,7 +14,8 @@ class ProductImageAdmin(admin.StackedInline):
 class ProductAdmin(admin.ModelAdmin):
     inlines = [ProductImageAdmin]
 
-    list_display = ('name', 'brand', 'price', 'get_price_apply_discount', 'get_price_apply_tax')
+    list_display = ('name', 'brand', 'price', 'quantity', 'get_price_apply_discount', 'get_price_apply_tax')
+    list_filter = ['category', 'brand']
     fields = ('name',
               'slug',
               'brand',

@@ -22,9 +22,12 @@
                 {% if page_obj.has_next %}
                       <a class="infinite-more-link" href="?page={{ page_obj.next_page_number }}"></a>
                 {% endif %}
-                <div class="d-flex justify-content-center" style="display: none">
-                      <div class="spinner-border loading" role="status" aria-hidden="true"></div>
-                </div>
+                {% if page_obj.end_index != 0 %}
+                    <div class="d-flex justify-content-center" style="display: none">
+                          <div class="spinner-border loading" role="status" aria-hidden="true"></div>
+                    </div>
+                {% endif %}
+
             </div>
         </div>
     </div>

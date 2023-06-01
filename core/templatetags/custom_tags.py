@@ -24,8 +24,8 @@ def show_product_basic_info(product):
 
 
 @register.inclusion_tag('shop/partial/product_action.html')
-def show_product_action(product):
-    return {'product': product}
+def show_product_action(request, product):
+    return {'request': request, 'product': product}
 
 
 @register.inclusion_tag('shop/partial/product_full_info.html')
@@ -49,3 +49,15 @@ def parent_counter(category, n=0):
         n += 1
         return parent_counter(category.parent_category, n)
     return n
+
+
+@register.simple_tag
+def set_var(val):
+    return val
+
+
+def not_variable(value):
+    return not value
+
+
+register.filter('not_variable', not_variable)

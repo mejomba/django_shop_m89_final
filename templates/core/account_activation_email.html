@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    {% autoescape off %}
+سلام چطوری
+{{ user.username }}
+<p>روی لینک زیر بزن تا حسابت فعال بشه</p>
+
+http://{{ domain }}{% url 'core:activate' uidb64=uid token=token %}
+{#        {% url 'activate' uidb64=uid token=token %}#}
+    {% endautoescape %}
+</body>
+</html>

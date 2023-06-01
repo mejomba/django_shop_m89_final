@@ -20,24 +20,75 @@
         <input type="password" name="password" id="loginPassword" class="ltr" required>
         <label for="loginPassword">گذرواژه</label>
       </div>
+
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="auth_type" id="sms-auth" value="sms" checked>
+          <label class="form-check-label mr-4" for="sms-auth">
+            احراز هویت با پیامک
+          </label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="auth_type" id="email-auth" value="email">
+          <label class="form-check-label mr-4" for="email-auth">
+            احراز هویت با ایمیل
+          </label>
+        </div>
+
+
         <div class="my-3 text-danger" id="error-area"></div>
       <input type="submit" value="ورود" class="btn btn-success w-100">
       <div class="mt-4 d-flex justify-content-around">
         <span>حساب کاربری ندارید؟ </span>
-        <a href="login.html" class="text-warning">ثبت نام کنید</a><br>
+        <a href="{% url 'core:register_view' %}" class="text-warning">ثبت نام کنید</a><br>
       </div>
     </form>
-    
+
   </div>
+    <div class="login-wrapper">
+    <form action="{% url 'core_api:login_verify' %}" method="POST" id="otp-form" class="d-none form mt-5">
+          {% csrf_token %}
+          <h4 class="text-success text-center" id="otp-header"></h4>
+          <div class="input-group mt-5">
+            <input type="text" name="opt_code" id="otp-code" class="ltr" required>
+            <label for="loginEmail">کد یکبار مصرف</label>
+          </div>
+          <div class="my-3 text-danger" id="otp-error-area"></div>
+            <!-- reverse timer -->
+            <div id="reverse-timer" class="ltr">
+            <div class="timer d-flex justify-content-start">
+
+               <div class="single-timer">
+                <div>
+                 <h4 class="minutes">0</h4>
+                </div>
+               </div>
+:
+               <div class="single-timer">
+                <div>
+                 <h4 class="seconds">0</h4>
+                </div>
+               </div>
+
+              </div>
+
+            </div>
+          <input type="submit" value="ثبت" class="btn btn-success w-100 mb-5">
+      </form>
+    </div>
 {% endblock %}
 
 {% block custom_js %}
 <script>
+var today;
+var futureTime;
+
   $('#login-form').submit(function(event){
     event.preventDefault();
     let formData = new FormData();
     formData.append('email', $('#loginEmail').val().trim());
-    formData.append('password', $('#loginPassword').val().trim())
+    formData.append('password', $('#loginPassword').val().trim());
+    formData.append('auth_type', $('input[name="auth_type"]:checked').val().trim())
+    let otpForm = $('#otp-form')
 
     $.ajax({
       url: $('#login-form').attr('action'),
@@ -48,73 +99,84 @@
       processData: false,
       contentType: false,
       success: function(data) {
-          window.location.replace('/profile');
-        {#window.localStorage.setItem('refreshToken', data['refresh']);#}
-        {#window.localStorage.setItem('accessToken', data['access'])#}
-        {#window.location = "{% url 'core:profile' %}"#}
-        {#  $.ajax({#}
-        {#      url: {% url 'core_api:profile' %},#}
-        {#      headers: {#}
-        {#          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`#}
-        {#      },#}
-        {#      type: "GET",#}
-        {#      tokenFlag: true,#}
-        {#      success: function (data) {#}
-        {#          console.log(data)#}
-        {#      }, // end success#}
-        {#      error: handleAjaxError#}
-        {#  }) //end ajax#}
+          $('#login-form').addClass('d-none')
+          otpForm.removeClass('d-none')
+          console.log(data)
+          $('#otp-header').text(data.detail)
+          today = new Date();
+          futureTime = today.setMinutes(today.getMinutes() + 2);
       },  //end success
       error: function (rs, e) {
           if (rs.status === 401) {
-              data = JSON.parse(rs.responseText)
+              let data = JSON.parse(rs.responseText)
               $('#error-area').text(data.detail)
           }
       }
     }) //end ajax
   }) //end submit
 
-  function handleAjaxError(rs, e) {
-      if (rs.status === 401) {
-          alert(rs.responseText)
-          if (this.tokenFlag) {
-              this.tokenFlag = false;
-              if (obtainAccessTokenWithRefreshToken()) {
-                  this.headers["Authorization"] = `Token ${localStorage.getItem('accessToken')}`
-                  $.ajax(this);
-              }
-          }
-      } else {
-          console.error(rs.responseText);
-      }
-  }
 
-  function obtainAccessTokenWithRefreshToken() {
-      let flag = true;
-      let formData = new FormData();
-      formData.append('refresh', localStorage.getItem('refresh'))
+  $('#otp-form').submit(function (event){
+      event.preventDefault();
+      let otpFormData = new FormData;
+      otpFormData.append('otp_code', $('#otp-code').val().trim());
+
       $.ajax({
-          url: "{% url 'core_api:token_refresh' %}",
-          type: "POST",
-          data: formData,
-          async: false,
+          url: this.action,
+          method: "POST",
+          data: otpFormData,
+          dataType: 'json',
           cache: false,
-          processData: false,
           contentType: false,
-          success: function (data) {
-              localStorage.setItem('accessToken', data['access'])
+          processData: false,
+          success: function (data){
+              console.log(document.referrer)
+              window.location.href = '/profile/'
           },
           error: function (rs, e) {
-              if (rs.status === 401) {
-                  flag = false;
-                  window.location.href = "/api/v1/login/";
-              } else {
-                  console.error(rs.responseText);
-              }
+              let err = JSON.parse(rs.responseText)
+              $('#otp-error-area').text(err.detail)
           }
-      });
-      return flag
-  }
+      }) // end ajax
+  })
+
+  // reverse timer
+  const timer = document.querySelectorAll('.single-timer h4');
+  //let today = new Date();
+  //const futureTime = today.setMinutes(today.getMinutes() + 2);
+  const expire = document.querySelector('.timer')
+
+function format(x) {
+ if (x < 10) {
+  return (x = `0${x}`)
+ } else {
+  return x
+ }
+}
+function setTimer() {
+ const today = new Date().getTime()
+ let t = futureTime - today;
+
+ let oneDay = 24 * 60 * 60 * 1000;
+ let oneHour = 60 * 60 * 1000;
+ let oneMin = 60 * 1000;
+
+ let minuets = Math.floor((t % oneHour) / oneMin) ;
+ let seconds = Math.floor((t % oneMin) / 1000);
+
+ const value = [minuets, seconds]
+ timer.forEach(function(item, idx) {
+  item.innerHTML = format(value[idx])
+ })
+
+ if (t <= 1000) {
+  expire.innerHTML = `<p class="expire text-danger">این لینک منقضی شده،‌دوباره وارد شوید</p>`
+  clearInterval(countDown);
+ }
+}
+
+let countDown = setInterval(setTimer, 1000);
+setTimer()
 
 </script>
 {% endblock custom_js %}

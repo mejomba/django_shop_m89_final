@@ -1,5 +1,22 @@
 {% extends 'admin/base_site.html' %}
 
 {% load static %}
+{% load i18n %}
 
 {% block extrastyle %}{{ block.super }}<link rel="stylesheet" type="text/css" href="{% static 'base/css/admin_override.css' %}" />{% endblock %}
+
+
+
+
+{% block extrahead %}
+// write your js script here, may be on click of the logout link or whatever.
+{% endblock %}
+
+{% block userlinks %}
+                {% url 'django-admindocs-docroot' as docsroot %}
+                {% if docsroot %}
+                    <a href="{{ docsroot }}">{% trans 'Documentation' %}</a> /
+                {% endif %}
+                <a href="{% url 'admin:password_change' %}">{% trans 'Change password' %}</a> /
+                <a href="{% url 'core:admin_logout' %}" id="yourlogoutid">{% trans 'Log out' %} اینجا هستیم </a>
+ {% endblock %}

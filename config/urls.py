@@ -23,6 +23,9 @@ urlpatterns = [
     path('', include('shop.urls')),
     path('', include('core.urls')),
     path('api/', include('core.api.v1.urls')),
+    path('api/', include('shop.api.v1.urls')),
+    path('order/', include('order.urls')),
+    path('ajax/', include('order.urls'))
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 #  static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -31,11 +31,11 @@
                 </li>
                 <li class="pr-2 d-flex justify-content-between hover:bg-slate-700">
                     <ion-icon name="battery-half-outline" class="self-center ml-2"></ion-icon>
-                    <a href="#" class="w-full pr-2 py-3 text-white"> اطلاعات حساب کاربری</a>
+                    <a href="{% url 'core_api:edit_profile' request.user.id %}" id="profile-detail" class="w-full pr-2 py-3 text-white"> اطلاعات حساب کاربری</a>
                 </li>
                 <li class="pr-2 d-flex justify-content-between hover:bg-slate-700">
                     <ion-icon name="battery-half-outline" class="self-center ml-2"></ion-icon>
-                    <a href="#" class="w-full pr-2 py-3 text-white"> سفارش ها</a>
+                    <a href="{% url 'shop_api:order_list_api' %}" class="w-full pr-2 py-3 text-white" id="order-list"> سفارش ها</a>
                 </li>                
                 <li class="pr-2 d-flex justify-content-between hover:bg-slate-700">
                     <ion-icon name="battery-half-outline" class="self-center ml-2"></ion-icon>
@@ -86,5 +86,7 @@
           }  //end error
         });
     })
+
+
     </script>
 {% endblock %}
