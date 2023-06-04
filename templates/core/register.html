@@ -67,7 +67,7 @@
             processData: false,
             contentType: false,
             success: function(data) {
-                window.location.replace("{% url 'core_api:login' %}");
+                window.location.replace("{% url 'core:login_view' %}");
             },  //end success
             error: function (rs, e) {
                 let data = JSON.parse(rs.responseText)
@@ -78,6 +78,9 @@
                 }
                 if (rs.status === 400) {
                     let data = JSON.parse(rs.responseText)
+                    console.log(data)
+                    {#errorArea.text('')#}
+                    {#errorArea.append(data)#}
                     {#$('#error-area').text(data.detail)#}
                 }
             }

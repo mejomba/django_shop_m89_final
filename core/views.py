@@ -61,7 +61,7 @@ def activate(request, uidb64, token):
         user.is_active = True
         user.save()
         messages.success(request, _('حساب شما با موفقیت فعال شد اکنون میتوانید وارد شوید'))
-        return redirect('core_api:login')
+        return redirect('core:login_view')
     else:
         messages.error(request, _('لینک فعال سازی منقضی شده مجدد درخواست لینک فعال سازی بدهید'))
         return redirect('shop:landing_page')
