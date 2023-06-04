@@ -27,6 +27,9 @@ class UserManager(BaseUserManager):
     def create_user(self, email=None, password=None, **extra_fields):
         """create and save new user"""
 
+        # password_pattern = r"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$"
+        # if not re.match(password_pattern, password):
+        #     raise ValueError('رمز عبور باید شامل اعداد و حروف الفبا باشد، حداقل ۸ کاراکتر')
         if not email:
             raise ValueError('ایمیل اجباری است')
         
