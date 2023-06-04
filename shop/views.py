@@ -11,12 +11,12 @@ def landing_page(request):
     categories = models.Category.objects.filter(parent_category=None)
 
     if discounts:
-        products_list = [discount.product_discount_related_name.all().distinct() for discount in discounts]
+        products_list = [discount.product_discount_related_name.filter(quantity__gt=0).distinct() for discount in discounts]
         products = products_list[0].union(*products_list)
     else:
         products = []
 
-    last_products = models.Product.objects.all().order_by('-create_at')[:4]
+    last_products = models.Product.objects.filter(quantity__gt=0).order_by('-create_at')[:4]
     
     context = {'magicsale': magicsale, 'products': products, 'categories': categories, 'last_products': last_products}
     return render(request, 'shop/landing_page.html', context)
@@ -24,6 +24,7 @@ def landing_page(request):
 
 class ProductListView(generic.ListView):
     model = models.Product
+    queryset = models.Product.objects.filter(quantity__gt=0)
     template_name = 'shop/product_list.html'
     context_object_name = 'products'
     paginate_by = 2
@@ -66,7 +67,7 @@ class CategoryDetailView(generic.ListView):
 
     def get_queryset(self):
         category = get_object_or_404(models.Category, pk=self.kwargs['pk'])
-        products = category.product_category_related_name.all()
+        products = category.product_category_related_name.filter(quantity__gt=0)
         return products
 
 
@@ -78,7 +79,7 @@ class DiscountListView(generic.ListView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         discounts = models.Discount.objects.active()
-        products_list = [discount.product_discount_related_name.all().distinct() for discount in discounts]
+        products_list = [discount.product_discount_related_name.filter(quantity__gt=0).distinct() for discount in discounts]
         context['products'] = products_list[0].union(*products_list)
         return context
 
@@ -91,7 +92,7 @@ class MagicSaleListView(generic.ListView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         magic_sales = models.MagicSale.objects.active()
-        products_list = [models.Product.objects.filter(magic_sale=magic) for magic in magic_sales]
+        products_list = [models.Product.objects.filter(magic_sale=magic, quantity__gt=0) for magic in magic_sales]
         context['products'] = products_list[0].union(*products_list)
 
         return context
