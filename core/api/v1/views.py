@@ -1,5 +1,6 @@
 from django.utils import timezone
 
+from django.contrib.sites.shortcuts import get_current_site
 from django.contrib.auth import get_user_model, login, logout
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render, redirect
@@ -17,16 +18,15 @@ from core.utils import send_confirmation_email
 import jwt, datetime
 from core.mixins import AuthenticatedAccessDeniedMixin, JWTRequiredForAuthenticateMixin, StaffOrJwtLoginRequiredMixin, \
     ProfileAuthorMixin
+from shop.api.v1.serializers import AddressSerializer, AddressSerializer2, CreateAddressSerializer
 
 from .serializers import UserSerializer, UserLoginSerializer, UserRegisterSerializer, UserUpdateSerializer
 
 from core import utils
+from ...models import Address
 
 
 class RegisterUserAPI(AuthenticatedAccessDeniedMixin, APIView):
-
-    # def get(self, request):
-    #     return render(request, 'core/register.html', {})
 
     def post(self, request):
         serializer_ = UserRegisterSerializer(data=request.data)
@@ -34,13 +34,16 @@ class RegisterUserAPI(AuthenticatedAccessDeniedMixin, APIView):
         serializer_.save()
         request.email = serializer_.validated_data['email']
         # TODO use celery for send email
-        send_confirmation_email(request, serializer_.data['id'])
+        current_site = get_current_site(request)
+
+        send_confirmation_email.delay(current_site.domain, request.email, serializer_.data['id'])
+        # send_confirmation_email(current_site.domain, request.email, serializer_.data['id'])
         return Response(serializer_.data, status=status.HTTP_201_CREATED)
 
 
 class LoginAPI(AuthenticatedAccessDeniedMixin, APIView):
-    def get(self, request):
-        return render(request, 'core/login.html', {})
+    # def get(self, request):
+    #     return render(request, 'core/login.html', {})
 
     def post(self, request, *args, **kwargs):
         email = request.POST.get('email')
@@ -120,6 +123,23 @@ class EditProfileAPI(ProfileAuthorMixin, APIView):
     def patch(self, request):
         user = request.user
         serializer_ = UserUpdateSerializer(user, data=request.data)
+        serializer_.is_valid(raise_exception=True)
+        serializer_.save()
+        return Response(serializer_.data)
+
+
+class AddressAPI(StaffOrJwtLoginRequiredMixin, APIView):
+    def get(self, request):
+        address = Address.objects.filter(user=request.user)
+        serializer_ = AddressSerializer2(instance=address, many=True)
+        return Response(serializer_.data)
+
+    def post(self, request):
+        request.data._mutable = True
+        request.data['user'] = request.user.pk
+        request.data._mutable = False
+
+        serializer_ = CreateAddressSerializer(data=request.data)
         serializer_.is_valid(raise_exception=True)
         serializer_.save()
         return Response(serializer_.data)
