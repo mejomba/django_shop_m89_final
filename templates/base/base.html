@@ -68,7 +68,7 @@ function getCookie(c_name)
             let itemCount = $('#item-count');
             let deleteCartItem = $('#delete-cart-item');
             $.ajax({
-                url: '/api/v1/cart/1',
+                url: '/api/v1/cart',
                 type: "GET",
                 dataType: 'json',
                 cache: false,
