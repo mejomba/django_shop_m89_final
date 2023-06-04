@@ -7,15 +7,33 @@ from order.models import Cart, CartItem, Order, OrderItem
 from django.contrib.auth import get_user_model
 
 
-class AddressSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Address
-        exclude = ['user']
-
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_model()
         exclude = ['password']
+
+
+class AddressSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Address
+        exclude = ['user']
+
+
+class AddressSerializer2(serializers.ModelSerializer):
+    user = UserSerializer()
+
+    class Meta:
+        model = Address
+        fields = '__all__'
+
+
+class CreateAddressSerializer(serializers.ModelSerializer):
+    # user = UserSerializer()
+
+    class Meta:
+        model = Address
+        fields = '__all__'
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -101,4 +119,3 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ['id', 'user', 'jcreate_at', 'orderitem_set', 'get_order_total_price', 'status_display', 'shipping_display', 'address', 'time_for_pay']
-
