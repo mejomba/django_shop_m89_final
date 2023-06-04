@@ -8,7 +8,8 @@ from django.shortcuts import redirect, reverse
 
 from core.models import Address
 from order.models import Cart, CartItem, Order, OrderItem
-from .serializers import ProductSerializer, CartSerializer, CartItemSerializer, CartSerializer2, OrderSerializer
+from .serializers import ProductSerializer, CartSerializer, CartItemSerializer, CartSerializer2, OrderSerializer, \
+    AddressSerializer
 from shop.models import Product
 from core.mixins import StaffOrJwtLoginRequiredMixin
 
@@ -34,11 +35,13 @@ class CartItemAPI(APIView):
             return Response()
 
         elif request.user.is_authenticated:
-            product = Product.objects.filter(pk=pk).first()
-            cart = Cart.objects.filter(user=request.user)[0]
-            cart.current_product = product
-            serializer_ = CartSerializer(instance=cart)
-            return Response(serializer_.data)
+            if product := Product.objects.filter(pk=pk, quantity__gt=0).first():
+                cart = Cart.objects.filter(user=request.user)[0]
+                cart.current_product = product
+                serializer_ = CartSerializer(instance=cart)
+                return Response(serializer_.data)
+            else:
+                return Response({'detail': 'اتمام موجودی'}, status=status.HTTP_404_NOT_FOUND)
 
         else:
             return Response({'detail': None})
@@ -106,7 +109,6 @@ class CartItemAPI(APIView):
             for idx, item in enumerate(request.session[cart_session]['cartitem_set']):
                 if item['product']['id'] == pk:
                     request.session.modified = True
-                    print('=======================')
                     count = request.session[cart_session]['cartitem_set'][idx]['count']
                     if action == '+' and product.quantity >= count + 1:
                         request.session[cart_session]['cartitem_set'][idx]['count'] += 1
@@ -177,22 +179,35 @@ class CartAPI(StaffOrJwtLoginRequiredMixin, APIView):
             serializer_ = CartSerializer2(instance=cart)
             return Response(serializer_.data, status=status.HTTP_200_OK)
         else:
-            return Response({'detail': 'unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
+            cart = request.session.get('cart')
+            serializer_ = CartSerializer2(instance=cart)
+            return Response(serializer_.data, status=status.HTTP_200_OK)
+            # return Response({'detail': 'unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
 
     def post(self, request):
         cart = Cart.objects.filter(user=request.user).first()
-        print(bool(cart.cartitem_set.filter(is_deleted=False)))
         if cart.cartitem_set.filter(is_deleted=False):
             cart_items = cart.cartitem_set.filter(is_deleted=False)
             address = Address.objects.filter(user=request.user).first()
+
+            if not address:
+                return Response({'detail': 'حساب کاربری شما فاقد آدرس است، ابتدا یک آدرس وارد کنید'}, status=status.HTTP_400_BAD_REQUEST)
+            # check product quantity
+            for item in cart_items:
+                product = Product.objects.filter(pk=item.product.id).first()
+                if item.count > product.quantity:
+                    return Response({'detail': f'تعدا کالای {item.product.name} بیشتر از موجودی '}, status=status.HTTP_404_NOT_FOUND)
             order = Order.objects.create(user=request.user, address=address)
 
             for item in cart_items:
                 product = Product.objects.filter(pk=item.product.id).first()
+                product.quantity -= item.count
+                product.save()
                 order_item = OrderItem.objects.create(product=product, order=order, count=item.count)
                 item.is_deleted = True
                 item.save()
                 print("======", item, '---', item.count)
+
 
             serializer_ = OrderSerializer(instance=order)
             print('============')
@@ -208,19 +223,15 @@ class OrderAPI(StaffOrJwtLoginRequiredMixin, APIView):
 
     def get(self, request, pk):
         order = Order.objects.filter(pk=pk).first()
-        serializer_ = OrderSerializer(instance=order)
-        return Response(serializer_.data)
-
-    # def post(self, request, pk):
-    #     order = Order.objects.filter(pk=pk).first()
-    #     serializer_ = OrderSerializer(instance=order)
-    #     print(serializer_.data)
-    #     return Response(serializer_.data)
+        if order.address:
+            serializer_ = OrderSerializer(instance=order)
+            return Response(serializer_.data)
+        return Response({'detail': 'no address'})
 
 
 class OrderListAPI(StaffOrJwtLoginRequiredMixin, APIView):
     def get(self, request):
         orders = Order.objects.filter(user=request.user, is_deleted=False).order_by('-create_at')
         serializers_ = OrderSerializer(orders, many=True)
-        print(serializers_.data)
         return Response(serializers_.data)
+
