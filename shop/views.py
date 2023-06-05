@@ -1,8 +1,13 @@
+from django.utils import timezone
 from typing import Any, Dict
-from django.shortcuts import render, get_list_or_404, get_object_or_404
+from django.shortcuts import render, get_list_or_404, get_object_or_404, redirect, reverse
 from django.views import generic
+from django.contrib import messages
+from django.db.models import Prefetch
 
+from core import utils
 from . import models
+from .forms import CommentForm
 
 
 def landing_page(request):
@@ -45,8 +50,40 @@ class ProductDetailView(generic.DetailView):
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context['images'] = models.ProductImage.objects.filter(product=self.kwargs['pk'])
-        context['comments'] = models.Comment.objects.filter(product=self.kwargs['pk']).order_by('-create_at')
+        context['comments'] = models.Comment.objects.filter(product=self.kwargs['pk'], is_deleted=False).order_by('-create_at')
+        context['form'] = CommentForm()
+        print(context)
         return context
+
+    def post(self, request, pk):
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            product = models.Product.objects.filter(pk=pk).first()
+            parent_comment = models.Comment.objects.filter(pk=form.cleaned_data['parent_comment']).first()
+            models.Comment.objects.create(content=form.cleaned_data['content'],
+                                          rating=form.cleaned_data['rating'],
+                                          parent_comment=parent_comment,
+                                          product=product,
+                                          user=request.user)
+        else:
+            print('form invalid')
+        return redirect(reverse('shop:product_detail', kwargs={'pk': pk}))
+
+
+def remove_comment(request, pk):
+    if request.method == 'POST':
+        comment = models.Comment.objects.filter(pk=pk).first()
+        print(comment.user)
+        if comment and request.user == comment.user:
+            comment.is_deleted = True
+            comment.delete_date = timezone.now()
+            comment.save()
+            utils.remove_related_object(comment)
+            # for sub_comment in comment.related_name.all():
+            #     pass
+            # comment.delete()
+            messages.success(request, 'کامنت با موفقیت حذف شد')
+    return redirect(request.META.get('HTTP_REFERER'))
 
 
 class CategoryListView(generic.ListView):

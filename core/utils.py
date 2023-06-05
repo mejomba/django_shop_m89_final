@@ -2,6 +2,7 @@ import time
 
 from celery import shared_task
 
+from django.utils import timezone
 from django.core.cache import cache
 from django.contrib import messages
 from django.core.mail import EmailMessage
@@ -126,3 +127,13 @@ def perform_2step_verification(user, auth_type):
         send_otp_email(user, otp_code)
     print('otp: ', otp_code)
     print('end perform 2step ==========')
+
+
+def remove_related_object(instance):
+    if instance.related_name:
+        for obj in instance.related_name.all():
+            obj.is_deleted = True
+            obj.delete_date = timezone.now()
+            obj.save()
+            print("obj in for loop =====", obj)
+            return remove_related_object(obj)

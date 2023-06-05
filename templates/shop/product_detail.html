@@ -33,26 +33,42 @@
             </div>
             <div class="col">
                 <div class="container my-4">
-                    <form>
-                    {% if request.user.is_authenticated %}
+                {% if request.user.is_authenticated %}
+                    <form action="" method="post">
+                    {% csrf_token %}
                         <div class="form-group">
-                        <label for="exampleInputEmail1">Email address</label>
-                        <input type="email" class="form-control" id="exampleInputEmail1" placeholder="{{ request.user.email }}" aria-describedby="emailHelp" disabled>
-                      </div>
-                        {% else %}
+                            {% if request.user.full_name %}
+                                <label for="name">نام شما:</label>
+                                <input type="text" class="form-control" id="name" placeholder="{{ request.user.full_name }}" aria-describedby="emailHelp" disabled>
+                            {% else %}
+                                <label for="exampleInputEmail1">Email address</label>
+                                <input type="text" class="form-control" id="exampleInputEmail1" placeholder="{{ request.user.email }}" aria-describedby="emailHelp" disabled>
+                            {% endif %}
+                        </div>
                         <div class="form-group">
-                        <label for="exampleInputEmail1">Email address</label>
-                        <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
-                      </div>
-                    {% endif %}
-                  <div class="form-group">
-                    <label for="exampleInputPassword1">نظر شما</label>
-                      <textarea class="form-control" rows="10"></textarea>
-                  </div>
-                  <button type="submit" class="btn btn-primary">ارسال نظر</button>
-                </form>
+                            {{ form.rating.errors }}
+                            <label for="{{ form.rating.id_for_label }}">{{ form.rating.label }}:</label>
+                            {{ form.rating }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.content.errors }}
+                            <label for="{{ form.content.id_for_label }}">{{ form.content.label }}:</label>
+                            {{ form.content }}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form.parent_comment }}
+                        </div>
+                    <button type="submit" class="btn btn-primary">ارسال نظر</button>
+                    </form>
+                {% else %}
+                    <p class="text-center">برای ثبت نظر ابتدا
+                    <a href="{% url 'core:login_view' %}"> وارد شوید</a>
+                    </p>
+                {% endif %}
+
                 </div>
-                {% show_product_comments comments %}
+                {% show_product_comments request comments form %}
             </div>
         </div>
     </div>
@@ -63,7 +79,16 @@
 
 <script>
 
+$('.reply-comment-btn').each(function (e){
+    var btn = this;
+    btn.addEventListener('click', function (e){
+        e.preventDefault();
+        e.currentTarget.classList.add('d-none')
+        console.log(e.currentTarget)
+        e.currentTarget.nextElementSibling.classList.remove('d-none')
+    })
 
+})
 
     </script>
 
