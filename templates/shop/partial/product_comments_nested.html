@@ -24,10 +24,10 @@
         <p class="py-4 px-xl-3 mr-xl-4 mr-2">{{ comment.content }}</p>
             <div class="text-left ml-5 my-2">
             {% if request.user == comment.user %}
-                <form action="{% url 'shop:remove_comment' comment.pk %}?next='home'" method="post">
+                <form action="{% url 'shop:remove_comment' comment.pk %}" method="post">
                 {% csrf_token %}
                     <input type="submit" class="btn btn-danger" value="حذف">
-                    <input type="hidden" name="next" value="{{ request.GET.next }}"/>
+{#                    <input type="hidden" name="next" value="{{ request.GET.next }}"/>#}
                 </form>
             {% endif %}
                 {% if request.user.is_authenticated %}

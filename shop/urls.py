@@ -12,5 +12,5 @@ urlpatterns = [
     path('category/<int:pk>/', views.CategoryDetailView.as_view(), name='category_detail'),
     path('discount/', views.DiscountListView.as_view(), name='discount_list'),
     path('magicsale/', views.MagicSaleListView.as_view(), name='magic_sale_list'),
-    path('comment/remove/<int:pk>/?next=home', views.remove_comment, name='remove_comment'),
+    path('comment/remove/<int:pk>/', views.remove_comment, name='remove_comment'),
 ]
