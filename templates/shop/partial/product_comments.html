@@ -28,7 +28,6 @@
                 <form action="{% url 'shop:remove_comment' comment.pk %}" method="post">
                 {% csrf_token %}
                     <input type="submit" class="btn btn-danger" value="حذف">
-{#                    <input type="hidden" name="next" value="{{ request.GET.next }}"/>#}
                 </form>
             {% endif %}
                 {% if request.user.is_authenticated %}
@@ -76,7 +75,7 @@
             {% if comment.related_name %}
             {% include 'shop/partial/product_comments_nested.html' %}
             {% endif %}
-        </div>        
+        </div>
     </div>
     {% endif %}
     {% endfor %}
