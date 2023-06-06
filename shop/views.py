@@ -73,15 +73,13 @@ class ProductDetailView(generic.DetailView):
 def remove_comment(request, pk):
     if request.method == 'POST':
         comment = models.Comment.objects.filter(pk=pk).first()
-        print(comment.user)
         if comment and request.user == comment.user:
             comment.is_deleted = True
             comment.delete_date = timezone.now()
             comment.save()
-            utils.remove_related_object(comment)
-            # for sub_comment in comment.related_name.all():
-            #     pass
-            # comment.delete()
+            if comment.related_name.all():
+                comment.delete()
+            # utils.remove_related_object(comment)
             messages.success(request, 'کامنت با موفقیت حذف شد')
     return redirect(request.META.get('HTTP_REFERER'))
 
