@@ -2,4 +2,96 @@
 
 {% block content %}
 <h3 class="text-center mt-30">الکی مثلا اینجا بانک</h3>
+    <div class="d-flex justify-content-center">
+        <form action="{% url 'shop_api:payment' %}" id="success-payment" class="mx-2" method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-success" >پرداخت موفق</button>
+            <input type="hidden" value="success" id="success" name="success">
+        </form>
+
+        <form action="{% url 'shop_api:payment' %}" id="fail-payment" class="mx-2" method="post">
+            {% csrf_token %}
+            <input type="submit" class="btn btn-danger" value="پرداخت نا موفق">
+            <input type="hidden" value="fail" id="fail" name="fail">
+        </form>
+
+        <a href="{% url 'core:profile' %}" class="btn btn-primary d-none text-center" id="back-to-profile">بازگشت به حساب</a>
+    </div>
+
+{% endblock %}
+
+{% block custom_js %}
+    <script>
+
+
+
+
+
+    let successPayment = $('#success-payment');
+    let failPayment = $('#fail-payment');
+    let backToProfile = $('#back-to-profile');
+    let orderStr = localStorage.getItem('order');
+    let order = JSON.parse(orderStr);
+    localStorage.removeItem('order');
+    console.log('order=====', order);
+    console.log('order id=====', order.id);
+
+
+
+
+    successPayment.submit(function (e) {
+        e.preventDefault();
+        let formData = new FormData();
+        formData.append('status', $('#success').val().trim())
+        formData.append('order_id', order.id)
+        $.ajax({
+            url : $(this).attr('action'),
+            type: "POST",
+            dataType: "json",
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: { "X-CSRFToken": getCookie('csrftoken') },
+            success: function (data){
+                console.log(data)
+                successPayment.addClass('d-none');
+                failPayment.addClass('d-none');
+                backToProfile.removeClass('d-none')
+            },
+            error: function (rs, e) {
+                console.log('error ... ')
+                console.log(rs)
+            }
+        }); // end ajax
+    })
+
+    failPayment.submit(function (e) {
+        e.preventDefault()
+        console.log($('#fail').val().trim())
+        let formData = new FormData();
+        formData.append('status', $('#fail').val().trim())
+        formData.append('order_id', order.id)
+        $.ajax({
+            url : successPayment.attr('action'),
+            type: 'POST',
+            dataType: 'json',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: { "X-CSRFToken": getCookie('csrftoken') },
+            success: function (data){
+                console.log(data)
+                successPayment.addClass('d-none');
+                failPayment.addClass('d-none');
+                backToProfile.removeClass('d-none')
+            },
+            error: function (rs, e) {
+                console.log('error ... ')
+                console.log(rs)
+            }
+        }); // end ajax
+    })
+
+
+    </script>
 {% endblock %}
