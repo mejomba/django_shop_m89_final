@@ -235,3 +235,21 @@ class OrderListAPI(StaffOrJwtLoginRequiredMixin, APIView):
         serializers_ = OrderSerializer(orders, many=True)
         return Response(serializers_.data)
 
+
+class Payment(StaffOrJwtLoginRequiredMixin, APIView):
+    def post(self, request):
+        payment_status = request.data.get('status')
+        order_id = request.data.get('order_id')
+        try:
+            order_obj = Order.objects.get(pk=order_id)
+
+            if payment_status == 'success':
+                order_obj.status = '2'
+                order_obj.save()
+            elif payment_status == 'fail':
+                order_obj.status = '3'
+                order_obj.save()
+            return Response({'detail': 'ok'})
+        except Exception as e:
+            print(e)
+            return Response({'detail': 'error'}, status=status.HTTP_400_BAD_REQUEST)
