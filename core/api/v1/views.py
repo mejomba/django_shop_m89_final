@@ -67,8 +67,8 @@ class LoginAPI(AuthenticatedAccessDeniedMixin, APIView):
 
 
 class LoginVerification(AuthenticatedAccessDeniedMixin, APIView):
-    def get(self, request):
-        return render(request, 'core/login.html', {})
+    # def get(self, request):
+    #     return render(request, 'core/login.html', {})
 
     def post(self, request):
         print('================', request.META.get('HTTP_REFERER'))
