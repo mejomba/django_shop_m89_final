@@ -103,7 +103,8 @@ class OrderSerializer(serializers.ModelSerializer):
     orderitem_set = serializers.SerializerMethodField()
     status_display = serializers.SerializerMethodField()
     shipping_display = serializers.SerializerMethodField()
-    address = AddressSerializer()
+    address_set = serializers.SerializerMethodField()
+    # address = AddressSerializer()
 
     def get_orderitem_set(self, order):
         qs = OrderItem.objects.filter(order_id=order, is_deleted=False)
@@ -116,6 +117,11 @@ class OrderSerializer(serializers.ModelSerializer):
     def get_shipping_display(self, obj):
         return obj.get_shipping_display()
 
+    def get_address_set(self, obj):
+        qs = Address.objects.filter(user=obj.user, is_deleted=False)
+        serializer = AddressSerializer(instance=qs, many=True)
+        return serializer.data
     class Meta:
         model = Order
-        fields = ['id', 'user', 'jcreate_at', 'orderitem_set', 'get_order_total_price', 'status_display', 'shipping_display', 'address', 'time_for_pay']
+        # fields = ['id', 'user', 'jcreate_at', 'orderitem_set', 'get_order_total_price', 'status_display', 'shipping_display', 'address', 'time_for_pay']
+        fields = ['id', 'user', 'jcreate_at', 'orderitem_set', 'get_order_total_price', 'status_display', 'shipping_display', 'address_set', 'time_for_pay']
