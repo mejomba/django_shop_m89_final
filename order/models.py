@@ -100,8 +100,8 @@ class Order(BaseModel):
     def save(self, *args, **kwargs):
         if not self.time_for_pay:
             self.time_for_pay = timezone.now() + datetime.timedelta(minutes=30)
-            self.save()
-            super().save(*args, **kwargs)
+        super().save(*args, **kwargs)
+
 
     # TODO "calculate total price of order after discount"
     # def get_order_total_price(self):
