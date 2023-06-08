@@ -1,8 +1,13 @@
+from django.utils import timezone
 from typing import Any, Dict
-from django.shortcuts import render, get_list_or_404, get_object_or_404
+from django.shortcuts import render, get_list_or_404, get_object_or_404, redirect, reverse
 from django.views import generic
+from django.contrib import messages
 
+
+from core import utils
 from . import models
+from .forms import CommentForm
 
 
 def landing_page(request):
@@ -11,12 +16,12 @@ def landing_page(request):
     categories = models.Category.objects.filter(parent_category=None)
 
     if discounts:
-        products_list = [discount.product_discount_related_name.all().distinct() for discount in discounts]
+        products_list = [discount.product_discount_related_name.filter(quantity__gt=0).distinct() for discount in discounts]
         products = products_list[0].union(*products_list)
     else:
         products = []
 
-    last_products = models.Product.objects.all().order_by('-create_at')[:4]
+    last_products = models.Product.objects.filter(quantity__gt=0).order_by('-create_at')[:4]
     
     context = {'magicsale': magicsale, 'products': products, 'categories': categories, 'last_products': last_products}
     return render(request, 'shop/landing_page.html', context)
@@ -24,6 +29,7 @@ def landing_page(request):
 
 class ProductListView(generic.ListView):
     model = models.Product
+    queryset = models.Product.objects.filter(quantity__gt=0)
     template_name = 'shop/product_list.html'
     context_object_name = 'products'
     paginate_by = 2
@@ -44,8 +50,38 @@ class ProductDetailView(generic.DetailView):
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context['images'] = models.ProductImage.objects.filter(product=self.kwargs['pk'])
-        context['comments'] = models.Comment.objects.filter(product=self.kwargs['pk']).order_by('-create_at')
+        context['comments'] = models.Comment.objects.filter(product=self.kwargs['pk'], is_deleted=False).order_by('-create_at')
+        context['form'] = CommentForm()
+        print(context)
         return context
+
+    def post(self, request, pk):
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            product = models.Product.objects.filter(pk=pk).first()
+            parent_comment = models.Comment.objects.filter(pk=form.cleaned_data['parent_comment']).first()
+            models.Comment.objects.create(content=form.cleaned_data['content'],
+                                          rating=form.cleaned_data['rating'],
+                                          parent_comment=parent_comment,
+                                          product=product,
+                                          user=request.user)
+        else:
+            print('form invalid')
+        return redirect(reverse('shop:product_detail', kwargs={'pk': pk}))
+
+
+def remove_comment(request, pk):
+    if request.method == 'POST':
+        comment = models.Comment.objects.filter(pk=pk).first()
+        if comment and request.user == comment.user:
+            comment.is_deleted = True
+            comment.delete_date = timezone.now()
+            comment.save()
+            if comment.related_name.all():
+                comment.delete()
+            # utils.remove_related_object(comment)
+            messages.success(request, 'کامنت با موفقیت حذف شد')
+    return redirect(request.META.get('HTTP_REFERER'))
 
 
 class CategoryListView(generic.ListView):
@@ -66,7 +102,7 @@ class CategoryDetailView(generic.ListView):
 
     def get_queryset(self):
         category = get_object_or_404(models.Category, pk=self.kwargs['pk'])
-        products = category.product_category_related_name.all()
+        products = category.product_category_related_name.filter(quantity__gt=0)
         return products
 
 
@@ -78,7 +114,7 @@ class DiscountListView(generic.ListView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         discounts = models.Discount.objects.active()
-        products_list = [discount.product_discount_related_name.all().distinct() for discount in discounts]
+        products_list = [discount.product_discount_related_name.filter(quantity__gt=0).distinct() for discount in discounts]
         context['products'] = products_list[0].union(*products_list)
         return context
 
@@ -91,7 +127,7 @@ class MagicSaleListView(generic.ListView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         magic_sales = models.MagicSale.objects.active()
-        products_list = [models.Product.objects.filter(magic_sale=magic) for magic in magic_sales]
+        products_list = [models.Product.objects.filter(magic_sale=magic, quantity__gt=0) for magic in magic_sales]
         context['products'] = products_list[0].union(*products_list)
 
         return context

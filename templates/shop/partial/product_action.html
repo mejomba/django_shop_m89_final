@@ -113,8 +113,12 @@ function getCookie(c_name)
                     }
                 },
                 error: function (rs, e) {
+                    let err = JSON.parse(rs.responseText)
+                    console.log(err)
+                    {#addProduct.addClass('d-none');#}
+                    addProduct.text('اتمام موجودی')
                     console.log('error.....')
-                    console.log(rs)
+                    {#console.log(rs)#}
                 }
             }) // end ajax
      })

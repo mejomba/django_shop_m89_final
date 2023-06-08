@@ -9,6 +9,7 @@ from django.utils.text import slugify
 
 from core.models import BaseModel, Discount
 from core import utils
+from core.models_on_delete import SOFT_CASCADE
 
 
 def post_image_file_path(instance, filename: str):
@@ -137,7 +138,7 @@ class Comment(BaseModel):
     content = models.TextField(verbose_name='متن نظر', max_length=500)
     rating = models.PositiveIntegerField(verbose_name='امتیاز', validators=[MinValueValidator(1), MaxValueValidator(5)])
 
-    parent_comment = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='related_name')
+    parent_comment = models.ForeignKey('self', on_delete=SOFT_CASCADE, null=True, blank=True, related_name='related_name')
     product = models.ForeignKey('Product', on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 

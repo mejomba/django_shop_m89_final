@@ -1,5 +1,8 @@
 import time
 
+from celery import shared_task
+
+from django.utils import timezone
 from django.core.cache import cache
 from django.contrib import messages
 from django.core.mail import EmailMessage
@@ -55,23 +58,27 @@ def discount_solver(product_instance):
     return sum_mablagh, sum_percent
 
 
-def send_confirmation_email(request, user_id):
+@shared_task
+def send_confirmation_email(current_site, email, user_id):
     user = get_user_model().objects.filter(id=user_id).first()
-    current_site = get_current_site(request)
+    # current_site = get_current_site(request)
+
+    print('current_site=====', current_site)
     mail_subject = _('فعال سازی حساب کاربری')
     context = {
         'user': user,
-        'domain': current_site.domain,
+        'domain': current_site,
         'uid': urlsafe_base64_encode(force_bytes(user.pk)),
         'token': account_activation_token.make_token(user)
     }
 
     msg = render_to_string('core/account_activation_email.html', context)
     print(msg)
-    to_email = request.email
+    to_email = email
     email = EmailMessage(mail_subject, msg, to=[to_email])
     email.send()
-    messages.success(request, _('ایمیل فعال سازی برای شما ارسال شد'))
+    # messages.success(request, _('ایمیل فعال سازی برای شما ارسال شد'))
+    # messages.success(request['request'], _('ایمیل فعال سازی برای شما ارسال شد'))
     # return HttpResponse(_('برو ایمیل چک کن'))
 
 
@@ -120,3 +127,13 @@ def perform_2step_verification(user, auth_type):
         send_otp_email(user, otp_code)
     print('otp: ', otp_code)
     print('end perform 2step ==========')
+
+
+def remove_related_object(instance):
+    if instance.related_name:
+        for obj in instance.related_name.all():
+            obj.is_deleted = True
+            obj.delete_date = timezone.now()
+            obj.save()
+            print("obj in for loop =====", obj)
+            return remove_related_object(obj)

@@ -34,8 +34,8 @@ def show_product_full_info(product):
 
 
 @register.inclusion_tag('shop/partial/product_comments.html')
-def show_product_comments(comments):
-    return {'comments': comments}
+def show_product_comments(request, comments, form):
+    return {'comments': comments, 'request': request, 'form': form}
 
 
 @register.inclusion_tag('base/nav.html')

@@ -35,7 +35,7 @@ SECRET_KEY = 'django-insecure-%bzp0(n=y7@1!+cuajtpvxp^@3#a(zrq%doqhx=i1l++%e$=(*
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', '192.168.1.103']
+ALLOWED_HOSTS = ['127.0.0.1', '192.168.1.102']
 
 
 # Application definition
@@ -104,6 +104,16 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': 'django_shop_m89',
+#         'USER': 'postgres',
+#         'PASSWORD': '1',
+#         'HOST': 'localhost',
+#         'PORT': '5434',
+#     }
+# }
 
 
 # Password validation
@@ -208,6 +218,7 @@ CELERY_TIMEZONE = 'UTC'
 
 # ========== sms settings ==========
 # SMS_PHONE = '983000685995'
-SMS_PHONE = '985000248725'
+# SMS_PHONE = '985000248725'
+SMS_PHONE = '9850002200889037'
 SMS_USER = 'mejomba'
 SMS_PASSWORD = 'Aa09360521688'

@@ -13,4 +13,6 @@ urlpatterns = [
     path('v1/logout/', views.LogoutAPI.as_view(), name='logout'),
     path('v1/login/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('v1/profile/edit/<int:pk>/', views.EditProfileAPI.as_view(), name='edit_profile'),
+    path('v1/address/', views.AddressAPI.as_view(), name='address'),
+    path('v1/address/add/', views.AddressAPI.as_view(), name='address_add'),
 ]

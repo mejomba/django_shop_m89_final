@@ -45,10 +45,12 @@
                 type: 'GET',
                 dataType: 'json',
                 cache: false,
+                async: false,
                 processData: false,
                 contentType: false,
                 success: function (data) {
                     localStorage.setItem('cart', JSON.stringify(data))
+                    console.log('profile success get')
                 },
                 error: function (rs, e) {
                     console.log('error.....')
@@ -60,7 +62,7 @@
             let profileAjaxArea = $('#profile-ajax-area');
             let cartStr = localStorage.getItem('cart')
             let cart = JSON.parse(cartStr)
-            console.log('cart', cart)
+            console.log('get cart in profile=== ', cart)
             let cartContent = "";
             let cartHtmlContent = "";
             let orderContent = "";
@@ -68,7 +70,10 @@
             let orderListContent = "";
             let orderListHtmlContent = "";
             let showSubmittedOrder;
+            let today;
+            let futureTime;
 
+            if (cart.cartitem_set) {
             for (item of cart.cartitem_set) {
                 console.log("======", item)
                 cartContent += `<div class="d-flex flex-wrap my-2 border rounded p-1 shadow-sm bg-white">
@@ -100,6 +105,7 @@
                             </div>`
 
                 //profileAjaxArea.append(text)
+            }
             }
                    cartHtmlContent = `
                               <div class="container-fluid">
@@ -141,9 +147,18 @@
                     success: function (data) {
                         console.log("cart to order form ========", data)
                         localStorage.removeItem('cart')
+                        {#localStorage.setItem('order', JSON.stringify(data))#}
                         profileAjaxArea.html(`<span>سفارش با موفقیت ثبت شد <a href="/api/v1/order/${data.id}/" class="btn btn-primary" id="show-submitted-order"> مشاهده </span>`)
                     },
                     error: function (rs, e) {
+                        if (rs.status === 400) {
+                            let err = JSON.parse(rs.responseText)
+                            alert(err.detail)
+                        }
+                        if (rs.status === 404) {
+                            let err = JSON.parse(rs.responseText)
+                            alert(err.detail)
+                        }
                         console.log('error.....')
                         console.log(rs)
                         console.log(rs.responseText)
@@ -151,8 +166,104 @@
                 }) // end ajax
             }) // end submit
 
-            // Create an observer instance. for get element after create
             var observer = new MutationObserver(function(mutations) {
+
+                let orderPaymentbtn = $('#order-payment')
+                orderPaymentbtn.on('click', function (e) {
+                    {#e.preventDefault();#}
+                    let selectedAddress = $('#select-address').find(':selected').val()
+                    let order = JSON.parse(localStorage.getItem('order'))
+                    let orderAddress = order.address_set[selectedAddress]
+                    order.address_set = [orderAddress]
+                    localStorage.setItem('order', JSON.stringify(order))
+                    {#console.log('order in payment 1====', order)#}
+                    {#console.log('order in payment 2====', order)#}
+                    {#console.log('selectedAddress in payment====', selectedAddress)#}
+                    {#console.log('orderAddress in payment====', orderAddress)#}
+                })
+
+                let createAddressForm = $('#create-address-form')
+                console.log('create address form ======', createAddressForm)
+                createAddressForm.on('submit', function (e) {
+                    e.preventDefault();
+                    let formData = new FormData();
+                    formData.append('user', $('#user').val().trim());
+                    formData.append('country', $('#country').val().trim());
+                    formData.append('province', $('#province').val().trim());
+                    formData.append('city', $('#city').val().trim());
+                    formData.append('street', $('#street').val().trim());
+                    formData.append('zip_code', $('#zip_code').val().trim());
+                    formData.append('pelak', $('#pelak').val().trim());
+                    formData.append('full_address', $('#full_address').val().trim());
+                    $.ajax({
+                        url: createAddressForm.attr('action'),
+                        type: "POST",
+                        dataType: 'json',
+                        data: formData,
+                        headers: {"X-CSRFToken": getCookie('csrftoken')},
+                        cache: false,
+                        processData: false,
+                        contentType: false,
+                        success: function (data) {
+                            let addressDetailHtml = ""
+                            {#for (let item in data){#}
+                                addressDetailHtml += `
+                                <div class="p-3 my-3 shadow border rounded bg-white mx-5">
+                                    <span class="mx-1">${data.country}</span>
+                                    <span class="mx-1">${data.province}</span>
+                                    <span class="mx-1">${data.city}</span>
+                                    <span class="mx-1">${data.street}</span>
+                                    <span class="mx-1">${data.zip_code}</span>
+                                    <span class="mx-1">${data.pelak}</span>
+                                    <p class="mx-1">آدرس کامل: ${data.full_address}</p>
+                                </div>
+                            `
+                            //}
+                            profileAjaxArea.prepend(addressDetailHtml)
+                        },
+                        error: function (rs, e) {
+                            console.log('error .....')
+                            console.log(rs)
+                        }
+                    }) // end ajax
+                }) // end on (submit)
+
+
+                // reverse timer
+                const timer = document.querySelectorAll('.single-timer h4');
+                const expire = document.querySelector('.timer')
+
+                function format(x) {
+                 if (x < 10) {
+                  return (x = `0${x}`)
+                 } else {
+                  return x
+                 }
+                }
+                function setTimer() {
+                 const today = new Date().getTime()
+                 let t = futureTime - today;
+
+                 let oneDay = 24 * 60 * 60 * 1000;
+                 let oneHour = 60 * 60 * 1000;
+                 let oneMin = 60 * 1000;
+
+                 let minuets = Math.floor((t % oneHour) / oneMin) ;
+                 let seconds = Math.floor((t % oneMin) / 1000);
+
+                 const value = [minuets, seconds]
+                 timer.forEach(function(item, idx) {
+                  item.innerHTML = format(value[idx])
+                 })
+
+                 if (t <= 1000 && expire) {
+                  expire.innerHTML = `<p class="expire text-danger">زمان پرداخت این سفارش به پایان رسیده</p>`
+                  clearInterval(countDown);
+                 }
+                }
+
+                let countDown = setInterval(setTimer, 1000);
+                setTimer()
 
                 let updateProfileForm = $('#update-profile-form')
                 updateProfileForm.on('submit', function (e) {
@@ -235,9 +346,19 @@
                         processData: false,
                         contentType: false,
                         success: function (data) {
+                            console.log('new data with address: ', data)
+                            let addressSelectOption = '';
+                            for (let item in data.address_set){
+                                addressSelectOption += `
+                                      <option value="${item}">${data.address_set[item].full_address}</option>
+                                `
+                                console.log("new data===", item)
+                            }
+                            localStorage.setItem('order', JSON.stringify(data))
                             orderContent = "";
                             orderHtmlContent = "";
-                            console.log('data===========', data)
+                            today = new Date();
+                            futureTime = new Date(data.time_for_pay)
                             for (item of data.orderitem_set) {
                                 orderContent += `<div class="d-flex flex-wrap my-2 border rounded p-1 shadow-sm bg-white">
                                                 <div class="">
@@ -262,6 +383,10 @@
                                                         <p class="my-1 badge badge-warning px-1 py-0 small">
                                                             <span>تعداد</span>
                                                             <span>${ item.count }</span>
+                                                        </p>
+                                                        <p class="my-1">
+                                                            <span>قیمت کل</span>
+                                                            <span>${ Number(item.product.get_final_price) * Number(item.count) }</span>
                                                         </p>
                                                     </div>
                                                 </div>
@@ -289,25 +414,35 @@
                                                                 <span>${ data.shipping_display }</span>
                                                             </p>
                                                             <hr>
-                                                            <p>
-                                                                <span>فرصت پرداخت</span>
-                                                                <span>${ data.time_for_pay }</span>
+                                                            <p class="text-center">
+                                                                <div id="reverse-timer" class="ltr">
+                                                                    <div class="timer d-flex justify-content-center">
+
+                                                                       <div class="single-timer">
+                                                                        <div>
+                                                                         <h4 class="minutes">0</h4>
+                                                                        </div>
+                                                                       </div>
+                                                        :
+                                                                       <div class="single-timer">
+                                                                        <div>
+                                                                         <h4 class="seconds">0</h4>
+                                                                        </div>
+                                                                       </div>
+
+                                                                      </div>
+                                                                    </div>
                                                             </p>
                                                             <hr>
-                                                            <p>
-                                                                <span>آدرس:</span>
-                                                                <span>${ data.address.country }</span>
-                                                                <span>${ data.address.province }</span>
-                                                                <span>${ data.address.city }</span>
-                                                                <span>${ data.address.street }</span>
-                                                                <span>${ data.address.zip_code }</span><br>
-                                                                <hr>
-
-                                                                <p> آدرس کامل: ${ data.address.full_address } </p>
-                                                            </p>
+                                                            <div id="replace-address" class="my-2">
+                                                            <label for="select-address">انتخاب آدرس</label>
+                                                            <select name="select_address" id="select-address" class="form-control">
+                                                            ${addressSelectOption}
+                                                            </select>
+                                                            </div>
                                                             <form action="/order/payment/bank/" method="post" class="my-3" id="order-payment">
                                                                 {% csrf_token %}
-                                                                <button type="submit" class="btn btn-primary bg-primary">پرداخت</button>
+                                                                <button type="submit" id="payment-btn" class="btn btn-primary bg-primary">پرداخت</button>
                                                             </form>
 
                                                         </div>
@@ -315,6 +450,20 @@
                             if (orderContent){
                                 profileAjaxArea.text('')
                                 profileAjaxArea.append(orderHtmlContent)
+                                if (data.status_display === 'پرداخت موفق'){
+                                    $('#payment-btn').addClass('d-none');
+                                    $('#reverse-timer').addClass('d-none');
+                                    $('.timer').text("")
+                                    $('#replace-address').replaceWith(data.address.full_address)
+                                    console.log(data.address.full_address)
+                                }
+                                else {
+                                    $('#payment-btn').removeClass('d-none');
+                                    $('#reverse-timer').removeClass('d-none')
+                                    if (new Date(data.time_for_pay) < new Date()){
+                                        $('#payment-btn').addClass('d-none');
+                                    }
+                                }
                             } else {
                                 profileAjaxArea.text('')
                                 profileAjaxArea.append(`<h3 class="text-center my-5">شما هیچ سفارشی ثبت نکرده اید</h3>`)
@@ -329,103 +478,6 @@
                     }) // end ajax
                 }) // end on (click)
 
-                {#orderDetail.on('click', function (e) {#}
-                {#    e.preventDefault();#}
-                {#    $.ajax({#}
-                {#        url: orderDetail.attr('href'),#}
-                {#        type: 'GET',#}
-                {#        dataType: 'json',#}
-                {#        cache: false,#}
-                {#        processData: false,#}
-                {#        contentType: false,#}
-                {#        success: function (data) {#}
-                {#            for (item of data.orderitem_set) {#}
-                {#                orderContent += `<div class="d-flex flex-wrap my-2 border rounded p-1 shadow-sm bg-white">#}
-                {#                                <div class="">#}
-                {#                                    <img src="${ item.product.thumbnail }" alt="" width="200">#}
-                {#                                </div>#}
-                {#                                <div class="mr-3">#}
-                {#                                    <h4 class="my-2">${ item.product.name }</h4>#}
-                {#                                    <h5 class="badge badge-primary">${ item.product.brand }</h5>#}
-                {#                                    <div class="mt-4">#}
-                {#                                        <p class="my-1">#}
-                {#                                            <span>قیمت</span>#}
-                {#                                            <span>${ item.product.price }</span>#}
-                {#                                        </p>#}
-                {#                                        <p class="my-1">#}
-                {#                                            <span>قیمت با تخفیف</span>#}
-                {#                                            <span>${ item.product.get_price_apply_discount }</span>#}
-                {#                                        </p>#}
-                {#                                        <p class="my-1">#}
-                {#                                            <span>قیمت نهایی با احتساب مالیات</span>#}
-                {#                                            <span>${ item.product.get_final_price }</span>#}
-                {#                                        </p>#}
-                {#                                        <p class="my-1 badge badge-warning px-1 py-0 small">#}
-                {#                                            <span>تعداد</span>#}
-                {#                                            <span>${ item.count }</span>#}
-                {#                                        </p>#}
-                {#                                    </div>#}
-                {#                                </div>#}
-                {#                            </div>`#}
-                {#            }#}
-                {#                   orderHtmlContent = `#}
-                {#                              <div class="container-fluid">#}
-                {#                                <div class="row mt-10">#}
-                {#                                    <div class="col-md-9 col">${orderContent}#}
-                {#                            </div>#}
-                {#                                    <div class="col-md-3 col">#}
-                {#                                        <div class="text-center border rounded p-2 bg-white">#}
-                {#                                            <p>#}
-                {#                                                <span>جمع قیمت</span>#}
-                {#                                                <span>${ data.get_order_total_price }</span>#}
-                {#                                            </p>#}
-                {#                                            <p>#}
-                {#                                                <span>وضعیت</span>#}
-                {#                                                <span>${ data.status_display }</span>#}
-                {#                                            </p>#}
-                {#                                            <p>#}
-                {#                                                <span>روش ارسال</span>#}
-                {#                                                <span>${ data.shipping_display }</span>#}
-                {#                                            </p>#}
-                {#                                            <p>#}
-                {#                                                <span>فرصت پرداخت</span>#}
-                {#                                                <span>${ data.time_for_pay }</span>#}
-                {#                                            </p>#}
-                {#                                            <p>#}
-                {#                                                <span>آدرس:</span>#}
-                {#                                                <span>${ data.address.country }</span>#}
-                {#                                                <span>${ data.address.province }</span>#}
-                {#                                                <span>${ data.address.city }</span>#}
-                {#                                                <span>${ data.address.street }</span>#}
-                {#                                                <span>${ data.address.zipcode }</span>#}
-                {#                                                <p>${ data.address.full_address }</p>#}
-                {#                                            </p>#}
-                {#                                            <form action="/order/payment/bank/" method="post" id="order-payment">#}
-                {#                                                {% csrf_token %}#}
-                {#                                                <button type="submit" class="btn btn-primary bg-primary">پرداخت</button>#}
-                {#                                            </form>#}
-                {##}
-                {#                                        </div>#}
-                {#                                    </div>`#}
-                {#            if (orderContent){#}
-                {#                profileAjaxArea.text('')#}
-                {#                profileAjaxArea.append(orderHtmlContent)#}
-                {#            } else {#}
-                {#                profileAjaxArea.text('')#}
-                {#                profileAjaxArea.append(`<h3 class="text-center my-5">شما هیچ سفارشی ثبت نکرده اید</h3>`)#}
-                {#            }#}
-                {#            console.log('get success')#}
-                {#        },#}
-                {#        error: function (rs, e) {#}
-                {#            console.log('error.....')#}
-                {#            console.log(rs)#}
-                {#            console.log(rs.responseText)#}
-                {#        }#}
-                {#    }) // end ajax#}
-                //}) // end on (click)
-
-                console.log(mutations)
-                console.log("profileAjaxArea.innerText", profileAjaxArea[0]);
                 let showSubmittedOrder = profileAjaxArea[0].querySelector('#show-submitted-order');
                 console.log(showSubmittedOrder)
                 showSubmittedOrder.addEventListener('click', function (e){
@@ -439,6 +491,17 @@
                         processData: false,
                         contentType: false,
                         success: function (data){
+                            console.log('show submit order=== ', data)
+                            today = new Date();
+                            futureTime = new Date(data.time_for_pay)
+                            let addressSelectOption = '';
+                            for (let item in data.address_set){
+                                addressSelectOption += `
+                                      <option value="${item}">${data.address_set[item].full_address}</option>
+                                `
+                                console.log("new data===", item)
+                            }
+                            localStorage.setItem('order', JSON.stringify(data))
                             for (item of data.orderitem_set) {
                                 orderContent += `<div class="d-flex flex-wrap my-2 border rounded p-1 shadow-sm bg-white">
                                                 <div class="">
@@ -464,6 +527,10 @@
                                                             <span>تعداد</span>
                                                             <span>${ item.count }</span>
                                                         </p>
+                                                        <p class="my-1">
+                                                            <span>قیمت کل</span>
+                                                            <span>${ Number(item.product.get_final_price) * Number(item.count) }</span>
+                                                        </p>
                                                     </div>
                                                 </div>
                                             </div>`
@@ -475,11 +542,11 @@
                                             </div>
                                                     <div class="col-md-3 col">
                                                         <div class="text-center border rounded p-2 bg-white">
-                                                            <p>
+                                                            <p class="my-1">
                                                                 <span>جمع قیمت</span>
                                                                 <span>${ data.get_order_total_price }</span>
                                                             </p>
-                                                            <p>
+                                                            <p class="my-1">
                                                                 <span>وضعیت</span>
                                                                 <span>${ data.status_display }</span>
                                                             </p>
@@ -487,19 +554,29 @@
                                                                 <span>روش ارسال</span>
                                                                 <span>${ data.shipping_display }</span>
                                                             </p>
-                                                            <p>
-                                                                <span>فرصت پرداخت</span>
-                                                                <span>${ data.time_for_pay }</span>
+                                                            <p class="my-1">
+                                                                <p>فرصت پرداخت</p>
+                                                                <div id="reverse-timer" class="ltr">
+                                                                    <div class="timer d-flex justify-content-center">
+
+                                                                       <div class="single-timer">
+                                                                        <div>
+                                                                         <h4 class="minutes">0</h4>
+                                                                        </div>
+                                                                       </div>
+                                                        :
+                                                                       <div class="single-timer">
+                                                                        <div>
+                                                                         <h4 class="seconds">0</h4>
+                                                                        </div>
+                                                                       </div>
+
+                                                                      </div>
+                                                                    </div>
                                                             </p>
-                                                            <p>
-                                                                <span>آدرس:</span>
-                                                                <span>${ data.address.country }</span>
-                                                                <span>${ data.address.province }</span>
-                                                                <span>${ data.address.city }</span>
-                                                                <span>${ data.address.street }</span>
-                                                                <span>${ data.address.zipcode }</span>
-                                                                <p>${ data.address.full_address }</p>
-                                                            </p>
+                                                            <select name="select_address" id="select-address" class="form-control">
+                                                            ${addressSelectOption}
+                                                            </select>
                                                             <form action="/order/payment/bank/" method="post" id="order-payment">
                                                                 {% csrf_token %}
                                                                 <button type="submit" class="btn btn-primary bg-primary">پرداخت</button>
@@ -537,14 +614,15 @@
                     processData: false,
                     contentType: false,
                     success: function (data) {
+                        {#localStorage.setItem('order', JSON.stringify(data))#}
                         profileAjaxArea.text('')
                         let lengthData = data.length
                         for (let item in data){
                             let images = "";
                             for (item_set of data[item].orderitem_set){
-                                images += `<img src="${item_set.product.thumbnail}" class="mx-2 mt-3 rounded" style="width: 120px;">`
+                                images += `<img src="${item_set.product.thumbnail}" class="mx-2 mt-3 p-1 rounded border" style="width: 120px;">`
                                 orderListContent = `
-                                <div class="row row-cols-1 my-4 p-2 border shadow">
+                                <div class="row row-cols-1 my-4 p-2 border shadow mx-2" style="background-color: white">
                                     <div class="col">
                                         <div class="d-flex justify-content-start align-items-center">
                                             <h4 class="mx-1">سفارش </h4>
@@ -560,8 +638,9 @@
                                         </div>
                                     </div>
                                     <div class="col">
-                                        <div class="d-flex flex-wrap justify-content-end">
+                                        <div class="d-flex flex-wrap justify-content-end align-items-center">
                                               <a href="/api/v1/order/${data[item].id}" class="btn btn-primary order-detail" id="order-detail">مشاهده جزیات</a>
+                                              <span class="mx-1">${data[item].status_display}</span>
                                         </div>
                                     </div>
                                  </div>`
@@ -635,14 +714,94 @@
                 })
             })// end on (click)
 
+            let addressDetail = $('#address-detail');
+            addressDetail.on('click', function (e) {
+                e.preventDefault();
+                $.ajax({
+                    url: addressDetail.attr('href'),
+                    type: "GET",
+                    dataType: 'json',
+                    cache: false,
+                    processData: false,
+                    contentType: false,
+                    success: function (data){
+                        console.log("data+++++", data)
+                        profileAjaxArea.text('')
+                        let addressDetailHtml = ""
+                        if (data.length){
+                            for (let item in data){
+                                addressDetailHtml += `
+                                <div class="p-3 my-3 shadow border rounded bg-white mx-5">
+                                    <span class="mx-1">${data[item].country}</span>
+                                    <span class="mx-1">${data[item].province}</span>
+                                    <span class="mx-1">${data[item].city}</span>
+                                    <span class="mx-1">${data[item].street}</span>
+                                    <span class="mx-1">${data[item].zip_code}</span>
+                                    <span class="mx-1">${data[item].pelak}</span>
+                                    <p class="mx-1 mt-3">آدرس کامل: ${data[item].full_address}</p>
+                                </div>
+                            `
+                            }
+                        }
 
+                        let addressCreateForm = `
+                        <div class="row mt-10">
+                                <div class="col-md-2"></div>
+                                <div class="col-md-8 border rounded">
+                                    <h4 class="text-center mt-3">اضافه کردن آدرس جدید</h4>
+                                    <form action="/api/v1/address/add/" method="POST" class="container p-2" id="create-address-form">
+                                    <input type="hidden" id="user" value="">
+                                    <div class="form-group">
+                                            <label for="country">کشور</label>
+                                        <input type="text" class="form-control" id="country">
+                                      </div>
+                                          <div class="form-group">
+                                            <label for="province">استان</label>
+                                            <input type="text" class="form-control" id="province">
+                                          </div>
+
+                                      <div class="form-group">
+                                        <label for="city">شهر</label>
+                                        <input type="text" class="form-control" id="city">
+                                      </div>
+
+                                       <div class="form-group">
+                                            <label for="street">خیابان</label>
+                                            <input type="text" class="form-control" id="street">
+                                       </div>
+                                        <div class="form-group">
+                                            <label for="zip_code">کد پستی</label>
+                                            <input type="text" class="form-control" id="zip_code">
+                                       </div>
+                                        <div class="form-group">
+                                            <label for="pelak">پلاک</label>
+                                            <input type="text" class="form-control" id="pelak">
+                                       </div>
+
+                                      <div class="form-group">
+                                        <label for="full_address">آدرس کامل</label>
+                                        <textarea name="" id="full_address" class="form-control" cols="30" rows="10"></textarea>
+                                      </div>
+
+                                      <button type="submit" class="btn btn-primary bg-primary">ثبت آدرس جدید</button>
+                                    </form>
+                                </div>
+                            <div class="col-md-2"></div>
+                        </div>`
+
+                        profileAjaxArea.append(addressDetailHtml)
+                        profileAjaxArea.append(addressCreateForm)
+                    },
+                    error: function (rs, e) {
+                        console.log('error get profile detail .....')
+                        console.log(rs)
+                    }
+                })
+            })// end on (click)
 
 
         }); // end ready
     }) // end DomContentLoaded
-
-
-        //let showSubmittedOrder = $("#show-submitted-order");
 
 
     </script>
