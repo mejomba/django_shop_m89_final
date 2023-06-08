@@ -30,6 +30,6 @@
    - `python -m virtualenv venv --python=python3.10`
    - `source venv/bin/activate`
 3. install requirements
-  - `pip install requirements.txt`
+  - `pip install -r requirements.txt`
 4. all migrations include in repository you can only run `python manage.py migrate` or delete all migrations from all app and run `python manage.py makemigrations && python manage.py migrate`
 5. runserver `python manage.py runserver`
