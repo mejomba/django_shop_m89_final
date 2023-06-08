@@ -1,7 +1,7 @@
 from django.utils.text import gettext_lazy as _
 from django.shortcuts import render, redirect, reverse, get_object_or_404
-from django.contrib.auth.mixins import LoginRequiredMixin, AccessMixin
-from django.contrib.auth import login, get_user_model
+from django.contrib.auth.mixins import AccessMixin
+from django.contrib.auth import get_user_model
 from django.contrib import messages
 import jwt
 from jwt import exceptions

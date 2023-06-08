@@ -1,27 +1,20 @@
-from django.utils import timezone
+import datetime
 
+from django.utils import timezone
 from django.contrib.sites.shortcuts import get_current_site
-from django.contrib.auth import get_user_model, login, logout
-from django.http import Http404, HttpResponseRedirect
-from django.shortcuts import render, redirect
-from django.template.loader import get_template
-from django.contrib import messages
+from django.contrib.auth import get_user_model, logout
+from django.http import HttpResponseRedirect
 from django.core.cache import cache
 from rest_framework import status
 from rest_framework.reverse import reverse
 from rest_framework.views import APIView
-from rest_framework import viewsets
 from rest_framework.response import Response
+import jwt
 
+from core.mixins import AuthenticatedAccessDeniedMixin, StaffOrJwtLoginRequiredMixin, ProfileAuthorMixin
+from shop.api.v1.serializers import AddressSerializer2, CreateAddressSerializer
+from .serializers import UserSerializer, UserRegisterSerializer, UserUpdateSerializer
 from core.tasks import send_confirmation_email
-
-import jwt, datetime
-from core.mixins import AuthenticatedAccessDeniedMixin, JWTRequiredForAuthenticateMixin, StaffOrJwtLoginRequiredMixin, \
-    ProfileAuthorMixin
-from shop.api.v1.serializers import AddressSerializer, AddressSerializer2, CreateAddressSerializer
-
-from .serializers import UserSerializer, UserLoginSerializer, UserRegisterSerializer, UserUpdateSerializer
-
 from core import utils
 from ...models import Address
 
@@ -33,17 +26,14 @@ class RegisterUserAPI(AuthenticatedAccessDeniedMixin, APIView):
         serializer_.is_valid(raise_exception=True)
         serializer_.save()
         request.email = serializer_.validated_data['email']
-        # TODO use celery for send email
+
         current_site = get_current_site(request)
 
         send_confirmation_email.delay(current_site.domain, request.email, serializer_.data['id'])
-        # send_confirmation_email(current_site.domain, request.email, serializer_.data['id'])
         return Response(serializer_.data, status=status.HTTP_201_CREATED)
 
 
 class LoginAPI(AuthenticatedAccessDeniedMixin, APIView):
-    # def get(self, request):
-    #     return render(request, 'core/login.html', {})
 
     def post(self, request, *args, **kwargs):
         email = request.POST.get('email')
@@ -67,11 +57,8 @@ class LoginAPI(AuthenticatedAccessDeniedMixin, APIView):
 
 
 class LoginVerification(AuthenticatedAccessDeniedMixin, APIView):
-    # def get(self, request):
-    #     return render(request, 'core/login.html', {})
 
     def post(self, request):
-        print('================', request.META.get('HTTP_REFERER'))
         otp_code = request.POST.get('otp_code')
         user_id = cache.get(otp_code)
         if not user_id:
