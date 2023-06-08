@@ -3,7 +3,7 @@ from typing import Any, Dict
 from django.shortcuts import render, get_list_or_404, get_object_or_404, redirect, reverse
 from django.views import generic
 from django.contrib import messages
-from django.db.models import Prefetch
+
 
 from core import utils
 from . import models
