@@ -19,7 +19,7 @@ from django.contrib import messages
 from django.utils.text import gettext_lazy as _
 from django.shortcuts import redirect
 
-from .utils import account_activation_token
+from .tasks import account_activation_token
 
 
 class Profile(StaffOrJwtLoginRequiredMixin, generic.View):

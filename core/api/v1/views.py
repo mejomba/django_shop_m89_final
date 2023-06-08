@@ -13,7 +13,7 @@ from rest_framework.views import APIView
 from rest_framework import viewsets
 from rest_framework.response import Response
 
-from core.utils import send_confirmation_email
+from core.tasks import send_confirmation_email
 
 import jwt, datetime
 from core.mixins import AuthenticatedAccessDeniedMixin, JWTRequiredForAuthenticateMixin, StaffOrJwtLoginRequiredMixin, \
