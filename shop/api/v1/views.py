@@ -1,3 +1,5 @@
+from pprint import pprint
+
 from django.utils import timezone
 
 from rest_framework.views import APIView
@@ -8,7 +10,7 @@ from django.shortcuts import redirect, reverse
 
 from core.models import Address
 from order.models import Cart, CartItem, Order, OrderItem
-from .serializers import ProductSerializer, CartSerializer, CartItemSerializer, CartSerializer2, OrderSerializer, \
+from .serializers import ProductSerializer, CartSerializerWithCurrentProduct, CartItemSerializer, CartSerializer, OrderSerializer, \
     AddressSerializer
 from shop.models import Product
 from core.mixins import StaffOrJwtLoginRequiredMixin
@@ -16,29 +18,34 @@ from core.mixins import StaffOrJwtLoginRequiredMixin
 
 class CartItemAPI(APIView):
     def get(self, request, pk):
-        if not request.user.is_authenticated and (cart_item := request.session.get('cart')):
+        if not request.user.is_authenticated and (cart_session := request.session.get('cart')):
             product = Product.objects.filter(pk=pk).first()
             product_serializer_ = ProductSerializer(product)
-            cart_item['current_product'] = product_serializer_.data
-            return Response(cart_item, status=status.HTTP_200_OK)
+            cart_session['current_product'] = product_serializer_.data
+            return Response(cart_session, status=status.HTTP_200_OK)
 
-        if request.user.is_authenticated and (cart_item := request.session.get('cart')):
-            cart = Cart.objects.get_or_create(user=request.user)[0]
-            for idx, item in enumerate(cart_item['cartitem_set']):
-                product = Product.objects.filter(pk=item['product']['id']).first()
-                cart_item = CartItem.objects.update_or_create(cart=cart,
-                                                              product=product,
-                                                              count=item['count'],
-                                                              is_deleted=False)[0]
-            else:
-                del request.session['cart']
-            return Response()
+        # if request.user.is_authenticated and (cart_session := request.session.get('cart')):
+        #     cart = Cart.objects.get_or_create(user=request.user)[0]
+        #     for idx, item in enumerate(cart_session['cartitem_set']):
+        #         product = Product.objects.filter(pk=item['product']['id']).first()
+        #         cart_item = CartItem.objects.update_or_create(cart=cart,
+        #                                                       product=product,
+        #                                                       count=item['count'],
+        #                                                       is_deleted=False)[0]
+        #         print('cart_item', cart_item)
+        #     else:
+        #         del request.session['cart']
+        #         # product = Product.objects.filter(pk=pk).first()
+        #         # cart.current_product = product
+        #         # serializer_ = CartSerializerWithCurrentProduct(instance=cart)
+        #         # return Response(serializer_.data)
+        #     return Response()
 
         elif request.user.is_authenticated:
             if product := Product.objects.filter(pk=pk, quantity__gt=0).first():
                 cart = Cart.objects.filter(user=request.user)[0]
                 cart.current_product = product
-                serializer_ = CartSerializer(instance=cart)
+                serializer_ = CartSerializerWithCurrentProduct(instance=cart)
                 return Response(serializer_.data)
             else:
                 return Response({'detail': 'اتمام موجودی'}, status=status.HTTP_404_NOT_FOUND)
@@ -55,7 +62,7 @@ class CartItemAPI(APIView):
             cart.current_product = product
             cart_item = CartItem.objects.update_or_create(cart=cart, product=product, count=1, is_deleted=False)[0]
 
-            serializer_ = CartSerializer(instance=cart)
+            serializer_ = CartSerializerWithCurrentProduct(instance=cart)
             print(serializer_.data)
             return Response(serializer_.data, status=status.HTTP_201_CREATED)
         else:
@@ -164,25 +171,49 @@ class CartItemAPI(APIView):
         cart = Cart.objects.filter(user=request.user).first()
         cart.current_product = product
 
-        serializer_ = CartSerializer(instance=cart)
+        serializer_ = CartSerializerWithCurrentProduct(instance=cart)
 
         print('========== end update cart')
         return Response(serializer_.data, status=status_)
 
 
-class CartAPI(StaffOrJwtLoginRequiredMixin, APIView):
+class CartAPI(APIView):
     def get(self, request):
-        if request.user.is_authenticated:
+        print('get')
+
+        if request.user.is_authenticated and (cart_session := request.session.get('cart')):
+            cart = Cart.objects.get_or_create(user=request.user)[0]
+            for idx, item in enumerate(cart_session['cartitem_set']):
+                product = Product.objects.filter(pk=item['product']['id']).first()
+                if cart_item := CartItem.objects.filter(cart=cart, product=product, is_deleted=False).first():
+                    cart_item.count += item['count']
+                    cart_item.save()
+                else:
+                    cart_item = CartItem.objects.create(cart=cart,
+                                                        product=product,
+                                                        count=item['count'],
+                                                        is_deleted=False)
+                print('cart_item', cart_item)
+            else:
+                del request.session['cart']
+                cart_serializer = CartSerializer(instance=cart)
+                return Response(cart_serializer.data)
+        elif request.user.is_authenticated:
             print('jwt user =======')
             cart = Cart.objects.filter(user=request.user).first()
             # cart.current_product = Product.objects.filter(pk=12).first()
-            serializer_ = CartSerializer2(instance=cart)
+            serializer_ = CartSerializer(instance=cart)
             return Response(serializer_.data, status=status.HTTP_200_OK)
+
+        elif not request.user.is_authenticated and (cart_session := request.session.get('cart')):
+            print('elif')
+            # pprint(cart_session)
+            return Response(cart_session, status=status.HTTP_200_OK)
+
+
         else:
-            cart = request.session.get('cart')
-            serializer_ = CartSerializer2(instance=cart)
-            return Response(serializer_.data, status=status.HTTP_200_OK)
-            # return Response({'detail': 'unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
+            print('cart else ')
+            return Response({'detail': 'no cart'}, status=status.HTTP_404_NOT_FOUND)
 
     def post(self, request):
         cart = Cart.objects.filter(user=request.user).first()
@@ -240,14 +271,18 @@ class Payment(StaffOrJwtLoginRequiredMixin, APIView):
     def post(self, request):
         payment_status = request.data.get('status')
         order_id = request.data.get('order_id')
+        address_id = request.data.get('address_id')
+        address = Address.objects.filter(pk=address_id).first()
         try:
             order_obj = Order.objects.get(pk=order_id)
 
             if payment_status == 'success':
                 order_obj.status = '2'
+                order_obj.address = address
                 order_obj.save()
             elif payment_status == 'fail':
                 order_obj.status = '3'
+                order_obj.address = address
                 order_obj.save()
             return Response({'detail': 'ok'})
         except Exception as e:
