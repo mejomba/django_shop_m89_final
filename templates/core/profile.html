@@ -45,10 +45,12 @@
                 type: 'GET',
                 dataType: 'json',
                 cache: false,
+                async: false,
                 processData: false,
                 contentType: false,
                 success: function (data) {
                     localStorage.setItem('cart', JSON.stringify(data))
+                    console.log('profile success get')
                 },
                 error: function (rs, e) {
                     console.log('error.....')
@@ -60,7 +62,7 @@
             let profileAjaxArea = $('#profile-ajax-area');
             let cartStr = localStorage.getItem('cart')
             let cart = JSON.parse(cartStr)
-            console.log('cart', cart)
+            console.log('get cart in profile=== ', cart)
             let cartContent = "";
             let cartHtmlContent = "";
             let orderContent = "";
@@ -145,12 +147,13 @@
                     success: function (data) {
                         console.log("cart to order form ========", data)
                         localStorage.removeItem('cart')
+                        {#localStorage.setItem('order', JSON.stringify(data))#}
                         profileAjaxArea.html(`<span>سفارش با موفقیت ثبت شد <a href="/api/v1/order/${data.id}/" class="btn btn-primary" id="show-submitted-order"> مشاهده </span>`)
                     },
                     error: function (rs, e) {
                         if (rs.status === 400) {
                             let err = JSON.parse(rs.responseText)
-                            alert(rs.detail)
+                            alert(err.detail)
                         }
                         if (rs.status === 404) {
                             let err = JSON.parse(rs.responseText)
@@ -163,8 +166,21 @@
                 }) // end ajax
             }) // end submit
 
-            // Create an observer instance. for get element after create
             var observer = new MutationObserver(function(mutations) {
+
+                let orderPaymentbtn = $('#order-payment')
+                orderPaymentbtn.on('click', function (e) {
+                    {#e.preventDefault();#}
+                    let selectedAddress = $('#select-address').find(':selected').val()
+                    let order = JSON.parse(localStorage.getItem('order'))
+                    let orderAddress = order.address_set[selectedAddress]
+                    order.address_set = [orderAddress]
+                    localStorage.setItem('order', JSON.stringify(order))
+                    {#console.log('order in payment 1====', order)#}
+                    {#console.log('order in payment 2====', order)#}
+                    {#console.log('selectedAddress in payment====', selectedAddress)#}
+                    {#console.log('orderAddress in payment====', orderAddress)#}
+                })
 
                 let createAddressForm = $('#create-address-form')
                 console.log('create address form ======', createAddressForm)
@@ -192,7 +208,7 @@
                             let addressDetailHtml = ""
                             {#for (let item in data){#}
                                 addressDetailHtml += `
-                                <div class="p-3 my-3 shadow border rounded">
+                                <div class="p-3 my-3 shadow border rounded bg-white mx-5">
                                     <span class="mx-1">${data.country}</span>
                                     <span class="mx-1">${data.province}</span>
                                     <span class="mx-1">${data.city}</span>
@@ -240,7 +256,7 @@
                   item.innerHTML = format(value[idx])
                  })
 
-                 if (t <= 1000) {
+                 if (t <= 1000 && expire) {
                   expire.innerHTML = `<p class="expire text-danger">زمان پرداخت این سفارش به پایان رسیده</p>`
                   clearInterval(countDown);
                  }
@@ -330,6 +346,15 @@
                         processData: false,
                         contentType: false,
                         success: function (data) {
+                            console.log('new data with address: ', data)
+                            let addressSelectOption = '';
+                            for (let item in data.address_set){
+                                addressSelectOption += `
+                                      <option value="${item}">${data.address_set[item].full_address}</option>
+                                `
+                                console.log("new data===", item)
+                            }
+                            localStorage.setItem('order', JSON.stringify(data))
                             orderContent = "";
                             orderHtmlContent = "";
                             today = new Date();
@@ -390,7 +415,6 @@
                                                             </p>
                                                             <hr>
                                                             <p class="text-center">
-                                                                <p>فرصت پرداخت</p>
                                                                 <div id="reverse-timer" class="ltr">
                                                                     <div class="timer d-flex justify-content-center">
 
@@ -410,20 +434,15 @@
                                                                     </div>
                                                             </p>
                                                             <hr>
-                                                            <p>
-                                                                <span>آدرس:</span>
-                                                                <span>${ data.address.country }</span>
-                                                                <span>${ data.address.province }</span>
-                                                                <span>${ data.address.city }</span>
-                                                                <span>${ data.address.street }</span>
-                                                                <span>${ data.address.zip_code }</span><br>
-                                                                <hr>
-
-                                                                <p> آدرس کامل: ${ data.address.full_address } </p>
-                                                            </p>
+                                                            <div id="replace-address" class="my-2">
+                                                            <label for="select-address">انتخاب آدرس</label>
+                                                            <select name="select_address" id="select-address" class="form-control">
+                                                            ${addressSelectOption}
+                                                            </select>
+                                                            </div>
                                                             <form action="/order/payment/bank/" method="post" class="my-3" id="order-payment">
                                                                 {% csrf_token %}
-                                                                <button type="submit" class="btn btn-primary bg-primary">پرداخت</button>
+                                                                <button type="submit" id="payment-btn" class="btn btn-primary bg-primary">پرداخت</button>
                                                             </form>
 
                                                         </div>
@@ -431,6 +450,20 @@
                             if (orderContent){
                                 profileAjaxArea.text('')
                                 profileAjaxArea.append(orderHtmlContent)
+                                if (data.status_display === 'پرداخت موفق'){
+                                    $('#payment-btn').addClass('d-none');
+                                    $('#reverse-timer').addClass('d-none');
+                                    $('.timer').text("")
+                                    $('#replace-address').replaceWith(data.address.full_address)
+                                    console.log(data.address.full_address)
+                                }
+                                else {
+                                    $('#payment-btn').removeClass('d-none');
+                                    $('#reverse-timer').removeClass('d-none')
+                                    if (new Date(data.time_for_pay) < new Date()){
+                                        $('#payment-btn').addClass('d-none');
+                                    }
+                                }
                             } else {
                                 profileAjaxArea.text('')
                                 profileAjaxArea.append(`<h3 class="text-center my-5">شما هیچ سفارشی ثبت نکرده اید</h3>`)
@@ -458,8 +491,17 @@
                         processData: false,
                         contentType: false,
                         success: function (data){
+                            console.log('show submit order=== ', data)
                             today = new Date();
                             futureTime = new Date(data.time_for_pay)
+                            let addressSelectOption = '';
+                            for (let item in data.address_set){
+                                addressSelectOption += `
+                                      <option value="${item}">${data.address_set[item].full_address}</option>
+                                `
+                                console.log("new data===", item)
+                            }
+                            localStorage.setItem('order', JSON.stringify(data))
                             for (item of data.orderitem_set) {
                                 orderContent += `<div class="d-flex flex-wrap my-2 border rounded p-1 shadow-sm bg-white">
                                                 <div class="">
@@ -532,15 +574,9 @@
                                                                       </div>
                                                                     </div>
                                                             </p>
-                                                            <p class="my-1">
-                                                                <span>آدرس:</span>
-                                                                <span>${ data.address.country }</span>
-                                                                <span>${ data.address.province }</span>
-                                                                <span>${ data.address.city }</span>
-                                                                <span>${ data.address.street }</span>
-                                                                <span>${ data.address.zip_code }</span>
-                                                                <p>${ data.address.full_address }</p>
-                                                            </p>
+                                                            <select name="select_address" id="select-address" class="form-control">
+                                                            ${addressSelectOption}
+                                                            </select>
                                                             <form action="/order/payment/bank/" method="post" id="order-payment">
                                                                 {% csrf_token %}
                                                                 <button type="submit" class="btn btn-primary bg-primary">پرداخت</button>
@@ -578,14 +614,15 @@
                     processData: false,
                     contentType: false,
                     success: function (data) {
+                        {#localStorage.setItem('order', JSON.stringify(data))#}
                         profileAjaxArea.text('')
                         let lengthData = data.length
                         for (let item in data){
                             let images = "";
                             for (item_set of data[item].orderitem_set){
-                                images += `<img src="${item_set.product.thumbnail}" class="mx-2 mt-3 rounded" style="width: 120px;">`
+                                images += `<img src="${item_set.product.thumbnail}" class="mx-2 mt-3 p-1 rounded border" style="width: 120px;">`
                                 orderListContent = `
-                                <div class="row row-cols-1 my-4 p-2 border shadow">
+                                <div class="row row-cols-1 my-4 p-2 border shadow mx-2" style="background-color: white">
                                     <div class="col">
                                         <div class="d-flex justify-content-start align-items-center">
                                             <h4 class="mx-1">سفارش </h4>
@@ -601,8 +638,9 @@
                                         </div>
                                     </div>
                                     <div class="col">
-                                        <div class="d-flex flex-wrap justify-content-end">
+                                        <div class="d-flex flex-wrap justify-content-end align-items-center">
                                               <a href="/api/v1/order/${data[item].id}" class="btn btn-primary order-detail" id="order-detail">مشاهده جزیات</a>
+                                              <span class="mx-1">${data[item].status_display}</span>
                                         </div>
                                     </div>
                                  </div>`

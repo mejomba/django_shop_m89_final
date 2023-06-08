@@ -32,9 +32,10 @@
     let backToProfile = $('#back-to-profile');
     let orderStr = localStorage.getItem('order');
     let order = JSON.parse(orderStr);
-    localStorage.removeItem('order');
-    console.log('order=====', order);
+    let address_id = order.address_set[0].id
+    console.log('order in bank page=== ', order)
     console.log('order id=====', order.id);
+    localStorage.removeItem('order');
 
 
 
@@ -44,6 +45,7 @@
         let formData = new FormData();
         formData.append('status', $('#success').val().trim())
         formData.append('order_id', order.id)
+        formData.append('address_id', address_id)
         $.ajax({
             url : $(this).attr('action'),
             type: "POST",
@@ -71,6 +73,7 @@
         let formData = new FormData();
         formData.append('status', $('#fail').val().trim())
         formData.append('order_id', order.id)
+        formData.append('address_id', address_id)
         $.ajax({
             url : successPayment.attr('action'),
             type: 'POST',
