@@ -45,23 +45,23 @@ class StaffOrJwtLoginRequiredMixin(AccessMixin):
                 payload = jwt.decode(token, 'secret', algorithms=['HS256'])
                 user = get_user_model().objects.filter(id=payload['id']).first()
                 if not user:
-                    messages.error(request, 'برای استفاده از این صفحه ابتدا وارد شوید.')
+                    messages.error(request, _('برای استفاده از این صفحه ابتدا وارد شوید.'))
                     response.status_code = 401
                     return response
 
                 if not user.is_active:
-                    messages.info(request, 'حساب کاربری شما ایجاد شده اما فعال نشده، یک ایمیل فعال ساری برای شما ارسال کردیم روی ایمیل فعال سازی کلیک کنید.')
+                    messages.info(request, _('حساب کاربری شما ایجاد شده اما فعال نشده، یک ایمیل فعال ساری برای شما ارسال کردیم روی ایمیل فعال سازی کلیک کنید.'))
                     return redirect('shop:landing_page')
                 request.user = user
                 return super().dispatch(request, *args, **kwargs)
             except jwt.ExpiredSignatureError:
-                messages.error(request, 'اعتبار توکن احراز هویت شما به پایان رسیده است. دوباره وارد شوید.')
+                messages.error(request, _('اعتبار توکن احراز هویت شما به پایان رسیده است. دوباره وارد شوید.'))
                 return redirect(LOGIN)
             except exceptions.InvalidTokenError:
-                messages.error(request, 'توکن ارسال شده معتبر نمیباشد. دوباره وارد شوید.')
+                messages.error(request, _('توکن ارسال شده معتبر نمیباشد. دوباره وارد شوید.'))
                 return redirect(LOGIN)
         else:
-            messages.error(request, 'برای استفاده از این صفحه باید وارد شوید.')
+            messages.error(request, _('برای استفاده از این صفحه باید وارد شوید.'))
             return redirect(LOGIN)
 
 
@@ -85,10 +85,10 @@ class JWTRequiredForAuthenticateMixin:
 
             except jwt.ExpiredSignatureError:
                 response.delete_cookie('jwt')
-                messages.error(request, 'اعتبار توکن احراز هویت شما به پایان رسیده است. دوباره وارد شوید.')
+                messages.error(request, _('اعتبار توکن احراز هویت شما به پایان رسیده است. دوباره وارد شوید.'))
                 return response
             except exceptions.InvalidTokenError:
-                messages.error(request, 'توکن ارسال شده معتبر نمیباشد. دوباره وارد شوید.')
+                messages.error(request, _('توکن ارسال شده معتبر نمیباشد. دوباره وارد شوید.'))
                 response.delete_cookie('jwt')
                 return response
         else:
