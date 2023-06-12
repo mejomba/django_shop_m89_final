@@ -10,8 +10,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.response import Response
-from .mixins import StaffOrJwtLoginRequiredMixin
-
+from .mixins import StaffOrJwtLoginRequiredMixin, AuthenticatedAccessDeniedMixin
 
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
@@ -77,11 +76,11 @@ def admin_logout(request):
         return response
 
 
-class Register(generic.View):
+class Register(AuthenticatedAccessDeniedMixin, generic.View):
     def get(self, request):
         return render(request, 'core/register.html', {})
 
 
-class LoginView(generic.View):
+class LoginView(AuthenticatedAccessDeniedMixin, generic.View):
     def get(self, request):
         return render(request, 'core/login.html', {})
