@@ -89,6 +89,28 @@ class CartSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'cartitem_set', 'get_cart_total_price']
 
 
+class CartSerializerWithDiscount(serializers.ModelSerializer):
+    user = UserSerializer()
+    # cartitem_set = CartItemSerializer(many=True)
+    cartitem_set = serializers.SerializerMethodField()
+    get_cart_total_price = serializers.SerializerMethodField()
+
+    def get_cartitem_set(self, cart):
+        qs = CartItem.objects.filter(cart_id=cart, is_deleted=False)
+        serializer = CartItemSerializer(instance=qs, many=True)
+        return serializer.data
+
+    def get_get_cart_total_price(self, obj):
+        discount_code = self.context.get('discount_code')
+        total_price = obj.get_cart_total_price(discount_code=discount_code)
+        return total_price
+
+    class Meta:
+        model = Cart
+        # fields = '__all__'
+        fields = ['id', 'user', 'cartitem_set', 'get_cart_total_price']
+
+
 class OrderItemSerializer(serializers.ModelSerializer):
     product = ProductSerializer()
     # cart = CartSerializer()
