@@ -130,3 +130,9 @@ class AddressAPI(StaffOrJwtLoginRequiredMixin, APIView):
         serializer_.is_valid(raise_exception=True)
         serializer_.save()
         return Response(serializer_.data)
+
+    # def delete(self, request):
+    #     pass
+    #
+    # def patch(self, request):
+    #     pass
