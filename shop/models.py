@@ -77,7 +77,12 @@ class Product(BaseModel):
     def get_price_apply_tax(self):
         price = self.get_price_apply_discount()
         return int(price + (price * (self.tax / 100)))
+        # return int(price * (self.tax / 100))
     get_price_apply_tax.short_description = 'قیمت پس از مالیات'
+
+    def tax_value(self):
+        price = self.price
+        return int(price * (self.tax / 100))
 
     def get_price_apply_discount(self):
         price = self.price
