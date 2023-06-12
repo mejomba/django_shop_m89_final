@@ -118,6 +118,13 @@
                                                 <span>جمع قیمت</span>
                                                 <span>${ cart.get_cart_total_price }</span>
                                             </p>
+                                            <form action="/api/v1/cart/discount/" id="discount-form" class="form-inline">
+                                                <div class="input-group mb-3">
+                                                  <input type="text" class="form-control" id="discount-code" placeholder="کد تخفیف" />
+                                                  <button class="btn btn-warning bg-warning" type="submit">ثبت تخفیف</button>
+                                                </div>
+                                                {% csrf_token %}
+                                            </form>
                                             <form action="/api/v1/cart/submit/" method="post" id="cart-to-order-form">
                                                 {% csrf_token %}
                                                 <button type="submit" class="btn btn-primary bg-primary">ثبت سفارش</button>
@@ -132,6 +139,40 @@
             }
 
 
+            let discountForm = $('#discount-form')
+            discountForm.submit(function (e) {
+                e.preventDefault();
+                let formData = new FormData();
+                console.log($('#discount-code').val().trim())
+                formData.append('discount_code', $('#discount-code').val().trim())
+                $.ajax({
+                    url: discountForm.attr('action'),
+                    type: "POST",
+                    dataType: 'json',
+                    data: formData,
+                    headers: { "X-CSRFToken": getCookie('csrftoken') },
+                    cache: false,
+                    processData: false,
+                    contentType: false,
+                    success: function (data) {
+                        localStorage.setItem('cart', JSON.stringify(data))
+                        console.log('data with discount price ===', data)
+                    },
+                    error: function (rs, e) {
+                        if (rs.status === 400) {
+                            let err = JSON.parse(rs.responseText)
+                            alert(err.detail)
+                        }
+                        if (rs.status === 404) {
+                            let err = JSON.parse(rs.responseText)
+                            alert(err.detail)
+                        }
+                        console.log('error.....')
+                        console.log(rs)
+                        console.log(rs.responseText)
+                    }
+                }) // end ajax
+            })
             let cartToOrderForm = $('#cart-to-order-form')
             console.log("cartToOrderForm ====", cartToOrderForm)
             cartToOrderForm.submit(function (e){

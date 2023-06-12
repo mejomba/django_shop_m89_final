@@ -94,7 +94,7 @@ function getCookie(c_name)
                 processData: false,
                 contentType: false,
                 success: function (data) {
-                    console.log(data)
+                    console.log("cart data ===== ", data)
                     console.log('success... GET')
                     if (data.cartitem_set){
                         $('#cart-item-count').text(countSum(data.cartitem_set))
