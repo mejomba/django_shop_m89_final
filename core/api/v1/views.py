@@ -117,7 +117,7 @@ class EditProfileAPI(ProfileAuthorMixin, APIView):
 
 class AddressAPI(StaffOrJwtLoginRequiredMixin, APIView):
     def get(self, request):
-        address = Address.objects.filter(user=request.user)
+        address = Address.objects.filter(user=request.user, is_deleted=False)
         serializer_ = AddressSerializer2(instance=address, many=True)
         return Response(serializer_.data)
 
@@ -131,8 +131,17 @@ class AddressAPI(StaffOrJwtLoginRequiredMixin, APIView):
         serializer_.save()
         return Response(serializer_.data)
 
-    # def delete(self, request):
-    #     pass
-    #
+    def delete(self, request):
+        user = request.user
+        print('delete address====== ', request.data)
+        address = Address.objects.filter(user=user, pk=int(request.data['address_id'])).first()
+        address.is_deleted = True
+        address.delete_date = timezone.now()
+        address.save()
+
+        address = Address.objects.filter(user=request.user, is_deleted=False)
+        serializer_ = AddressSerializer2(instance=address, many=True)
+        return Response(serializer_.data)
+
     # def patch(self, request):
     #     pass
