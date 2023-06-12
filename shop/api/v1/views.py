@@ -10,8 +10,9 @@ from django.shortcuts import redirect, reverse
 
 from core.models import Address
 from order.models import Cart, CartItem, Order, OrderItem
-from .serializers import ProductSerializer, CartSerializerWithCurrentProduct, CartItemSerializer, CartSerializer, OrderSerializer, \
-    AddressSerializer
+from .serializers import ProductSerializer, CartSerializerWithCurrentProduct, CartItemSerializer, CartSerializer, \
+    OrderSerializer, \
+    AddressSerializer, CartSerializerWithDiscount
 from shop.models import Product
 from core.mixins import StaffOrJwtLoginRequiredMixin
 
@@ -288,3 +289,12 @@ class Payment(StaffOrJwtLoginRequiredMixin, APIView):
         except Exception as e:
             print(e)
             return Response({'detail': 'error'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class Discount(APIView):
+
+    def post(self, request):
+        discount_code = request.data.get('discount_code')
+        cart = Cart.objects.filter(user=request.user).first()
+        serializer_ = CartSerializerWithDiscount(instance=cart, context={'discount_code': discount_code})
+        return Response(serializer_.data, status=status.HTTP_200_OK)
