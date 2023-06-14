@@ -10,10 +10,11 @@ from django.shortcuts import redirect, reverse
 
 from core.models import Address
 from order.models import Cart, CartItem, Order, OrderItem
-from .serializers import ProductSerializer, CartSerializerWithCurrentProduct, CartItemSerializer, CartSerializer, OrderSerializer, \
-    AddressSerializer
-from shop.models import Product
-from core.mixins import StaffOrJwtLoginRequiredMixin
+from .serializers import ProductSerializer, CartSerializerWithCurrentProduct, CartItemSerializer, CartSerializer, \
+    OrderSerializer, \
+    AddressSerializer, CartSerializerWithDiscount
+from shop.models import Product, Discount
+from core.mixins import StaffOrJwtLoginRequiredMixin, ProfileAuthorMixin, OrderAuthorMixin
 
 
 class CartItemAPI(APIView):
@@ -215,11 +216,55 @@ class CartAPI(APIView):
             print('cart else ')
             return Response({'detail': 'no cart'}, status=status.HTTP_404_NOT_FOUND)
 
-    def post(self, request):
+    # def post(self, request):
+    #     cart = Cart.objects.filter(user=request.user).first()
+    #     print('cart discount====== ', cart.discount)
+    #     if cart.cartitem_set.filter(is_deleted=False):
+    #         cart_items = cart.cartitem_set.filter(is_deleted=False)
+    #         address = Address.objects.filter(user=request.user).first()
+    #         discount = cart.discount
+    #
+    #         if not address:
+    #             return Response({'detail': 'حساب کاربری شما فاقد آدرس است، ابتدا یک آدرس وارد کنید'}, status=status.HTTP_400_BAD_REQUEST)
+    #         # check product quantity
+    #         for item in cart_items:
+    #             product = Product.objects.filter(pk=item.product.id).first()
+    #             if item.count > product.quantity:
+    #                 return Response({'detail': f'تعدا کالای {item.product.name} بیشتر از موجودی '}, status=status.HTTP_404_NOT_FOUND)
+    #
+    #         order = Order.objects.create(user=request.user, address=address, discount=discount)
+    #
+    #         for item in cart_items:
+    #             product = Product.objects.filter(pk=item.product.id).first()
+    #             product.quantity -= item.count
+    #             product.save()
+    #             order_item = OrderItem.objects.create(product=product, order=order, count=item.count)
+    #             item.is_deleted = True
+    #             item.save()
+    #             print("======", item, '---', item.count)
+    #
+    #         cart.discount = None
+    #         cart.save()
+    #
+    #         serializer_ = OrderSerializer(instance=order)
+    #         print('============')
+    #         print(serializer_.data)
+    #         print('============')
+    #
+    #         return Response(serializer_.data, status=status.HTTP_201_CREATED)
+    #     else:
+    #         return Response({'detail': 'empty'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class CreateOrderAPI(StaffOrJwtLoginRequiredMixin, APIView):
+    serializer_class = OrderSerializer
+
+    def post(self, request, pk=None):
         cart = Cart.objects.filter(user=request.user).first()
         if cart.cartitem_set.filter(is_deleted=False):
             cart_items = cart.cartitem_set.filter(is_deleted=False)
             address = Address.objects.filter(user=request.user).first()
+            discount = cart.discount
 
             if not address:
                 return Response({'detail': 'حساب کاربری شما فاقد آدرس است، ابتدا یک آدرس وارد کنید'}, status=status.HTTP_400_BAD_REQUEST)
@@ -228,7 +273,8 @@ class CartAPI(APIView):
                 product = Product.objects.filter(pk=item.product.id).first()
                 if item.count > product.quantity:
                     return Response({'detail': f'تعدا کالای {item.product.name} بیشتر از موجودی '}, status=status.HTTP_404_NOT_FOUND)
-            order = Order.objects.create(user=request.user, address=address)
+
+            order = Order.objects.create(user=request.user, address=address, discount=discount)
 
             for item in cart_items:
                 product = Product.objects.filter(pk=item.product.id).first()
@@ -237,13 +283,11 @@ class CartAPI(APIView):
                 order_item = OrderItem.objects.create(product=product, order=order, count=item.count)
                 item.is_deleted = True
                 item.save()
-                print("======", item, '---', item.count)
 
+            cart.discount = None
+            cart.save()
 
             serializer_ = OrderSerializer(instance=order)
-            print('============')
-            print(serializer_.data)
-            print('============')
 
             return Response(serializer_.data, status=status.HTTP_201_CREATED)
         else:
@@ -251,16 +295,22 @@ class CartAPI(APIView):
 
 
 class OrderAPI(StaffOrJwtLoginRequiredMixin, APIView):
+    serializer_class = OrderSerializer
 
     def get(self, request, pk):
         order = Order.objects.filter(pk=pk).first()
-        if order.address:
+
+        if not order or not order.user == request.user:
+            return Response({'detail': 'not found'}, status=status.HTTP_404_NOT_FOUND)
+        if order and order.address:
             serializer_ = OrderSerializer(instance=order)
             return Response(serializer_.data)
         return Response({'detail': 'no address'})
 
 
 class OrderListAPI(StaffOrJwtLoginRequiredMixin, APIView):
+    serializer_class = OrderSerializer
+
     def get(self, request):
         orders = Order.objects.filter(user=request.user, is_deleted=False).order_by('-create_at')
         serializers_ = OrderSerializer(orders, many=True)
@@ -288,3 +338,15 @@ class Payment(StaffOrJwtLoginRequiredMixin, APIView):
         except Exception as e:
             print(e)
             return Response({'detail': 'error'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class DiscountAPI(APIView):
+
+    def post(self, request):
+        discount_code = request.data.get('discount_code')
+        discount = Discount.objects.filter(code=discount_code).first()
+        cart = Cart.objects.filter(user=request.user).first()
+        cart.discount = discount
+        cart.save()
+        serializer_ = CartSerializerWithDiscount(instance=cart, context={'discount_code': discount_code})
+        return Response(serializer_.data, status=status.HTTP_200_OK)

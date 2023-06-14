@@ -11,8 +11,9 @@
     {% include 'base/profile_panel.html' %}
     <div class="w-100 container-fluid">
         <div class="container my-5">
-            <div class="row">
-                
+            <div class="row justify-content-center">
+
+                <div id="profile-ajax-area-message" class="mt-3"></div>
                 <div class="col-12 border-2 border-orange-500 p-2 my-3 rounded" id="profile-ajax-area">
                     <!-- ajax data represent here -->
 
@@ -60,6 +61,7 @@
             }) // end ajax
 
             let profileAjaxArea = $('#profile-ajax-area');
+            let profileAjaxAreaMessage = $('#profile-ajax-area-message');
             let cartStr = localStorage.getItem('cart')
             let cart = JSON.parse(cartStr)
             console.log('get cart in profile=== ', cart)
@@ -118,7 +120,15 @@
                                                 <span>جمع قیمت</span>
                                                 <span>${ cart.get_cart_total_price }</span>
                                             </p>
-                                            <form action="/api/v1/cart/submit/" method="post" id="cart-to-order-form">
+                                            <form action="/api/v1/cart/discount/" id="discount-form" class="form-inline">
+                                                <div class="input-group mb-3">
+                                                  <input type="text" class="form-control" id="discount-code" placeholder="کد تخفیف" />
+                                                  <button class="btn btn-warning bg-warning" type="submit">ثبت تخفیف</button>
+                                                </div>
+                                                {% csrf_token %}
+                                            </form>
+                                            {#<form action="/api/v1/cart/" method="post" id="cart-to-order-form">#}
+                                            <form action="/api/v1/order/create/" method="post" id="cart-to-order-form">
                                                 {% csrf_token %}
                                                 <button type="submit" class="btn btn-primary bg-primary">ثبت سفارش</button>
                                             </form>
@@ -132,6 +142,40 @@
             }
 
 
+            let discountForm = $('#discount-form')
+            discountForm.submit(function (e) {
+                e.preventDefault();
+                let formData = new FormData();
+                console.log($('#discount-code').val().trim())
+                formData.append('discount_code', $('#discount-code').val().trim())
+                $.ajax({
+                    url: discountForm.attr('action'),
+                    type: "POST",
+                    dataType: 'json',
+                    data: formData,
+                    headers: { "X-CSRFToken": getCookie('csrftoken') },
+                    cache: false,
+                    processData: false,
+                    contentType: false,
+                    success: function (data) {
+                        localStorage.setItem('cart', JSON.stringify(data))
+                        console.log('data with discount price ===', data)
+                    },
+                    error: function (rs, e) {
+                        if (rs.status === 400) {
+                            let err = JSON.parse(rs.responseText)
+                            alert(err.detail)
+                        }
+                        if (rs.status === 404) {
+                            let err = JSON.parse(rs.responseText)
+                            alert(err.detail)
+                        }
+                        console.log('error.....')
+                        console.log(rs)
+                        console.log(rs.responseText)
+                    }
+                }) // end ajax
+            })
             let cartToOrderForm = $('#cart-to-order-form')
             console.log("cartToOrderForm ====", cartToOrderForm)
             cartToOrderForm.submit(function (e){
@@ -166,23 +210,49 @@
                 }) // end ajax
             }) // end submit
 
+
             var observer = new MutationObserver(function(mutations) {
 
-                let orderPaymentbtn = $('#order-payment')
-                orderPaymentbtn.on('click', function (e) {
-                    {#e.preventDefault();#}
-                    let selectedAddress = $('#select-address').find(':selected').val()
-                    let order = JSON.parse(localStorage.getItem('order'))
-                    let orderAddress = order.address_set[selectedAddress]
-                    order.address_set = [orderAddress]
-                    localStorage.setItem('order', JSON.stringify(order))
-                    {#console.log('order in payment 1====', order)#}
-                    {#console.log('order in payment 2====', order)#}
-                    {#console.log('selectedAddress in payment====', selectedAddress)#}
-                    {#console.log('orderAddress in payment====', orderAddress)#}
+                let editAddressBtn = $('.edit-address')
+                console.log('edit address btn====', editAddressBtn)
+                editAddressBtn.on('click', function (e) {
+                    e.preventDefault();
+                    console.log(this.nextElementSibling)
+                    this.nextElementSibling.classList.remove('d-none')
+                    this.classList.add('d-none')
+                    this.previousElementSibling.classList.add('d-none')
                 })
 
-                let createAddressForm = $('#create-address-form')
+                let editAddressForms = $('.edit-address-forms')
+                editAddressForms.on('submit', function (e) {
+                    e.preventDefault();
+                    let formData = new FormData();
+                    formData.append('country', $(this).find('input[name=country-edit]').val())
+                    formData.append('province', $(this).find('input[name=province-edit]').val())
+                    formData.append('city', $(this).find('input[name=city-edit]').val())
+                    formData.append('street', $(this).find('input[name=street-edit]').val())
+                    formData.append('zip_code', $(this).find('input[name=zip-code-edit]').val())
+                    formData.append('pelak', $(this).find('input[name=pelak-edit]').val())
+                    formData.append('full_address', $(this).find('textarea[name=full-address-edit]').val())
+                    formData.append('address_id', $(this).find('input[name=address_id]').val())
+                    $.ajax({
+                        url: '/api/v1/address/',
+                        type: 'PATCH',
+                        data: formData,
+                        headers: {"X-CSRFToken": getCookie('csrftoken')},
+                        cache: false,
+                        contentType: false,
+                        processData: false,
+                        success: function (data){
+                            console.log('address edit success: ', data)
+                        },
+                        error: function (rs, e) {
+                            console.log('address edit error: ', rs)
+                        }
+                    })
+                }) // end on submit
+
+                let createAddressForm = $('#create-address-form');
                 console.log('create address form ======', createAddressForm)
                 createAddressForm.on('submit', function (e) {
                     e.preventDefault();
@@ -216,6 +286,54 @@
                                     <span class="mx-1">${data.zip_code}</span>
                                     <span class="mx-1">${data.pelak}</span>
                                     <p class="mx-1">آدرس کامل: ${data.full_address}</p>
+                                    <div class="d-flex justify-content-end">
+                                        <form action="#" class="mx-1 delete-address-form">
+                                            <input type="submit" value="حذف" class="btn btn-danger bg-danger delete-address">
+                                            <input type="hidden" value="${data.id}" name="address_id">
+                                        </form>
+
+                                    <button class="mx-1 btn btn-primary bg-primary edit-address">ویرایش</button>
+
+                                    <form action="#" class="container d-none edit-address-forms" id="edit-address-form">
+                                            <div class="form-group">
+                                            <label for="country-edit">کشور</label>
+                                            <input type="text" class="form-control" id="country-edit" name="country-edit" value="${data.country}">
+                                          </div>
+                                              <div class="form-group">
+                                                <label for="province-edit">استان</label>
+                                                <input type="text" class="form-control" id="province-edit" name="province-edit" value="${data.province}">
+                                              </div>
+
+                                          <div class="form-group">
+                                            <label for="city-edit">شهر</label>
+                                            <input type="text" class="form-control" id="city-edit" name="city-edit" value="${data.city}">
+                                          </div>
+
+                                            <div class="form-group">
+                                                <label for="street-edit">خیابان</label>
+                                                <input type="text" class="form-control" id="street-edit" name="street-edit" value="${data.street}">
+                                              </div>
+
+                                          <div class="form-group">
+                                            <label for="zip-code-edit">کد پستی</label>
+                                            <input type="text" class="form-control" id="zip-code-edit" name="zip-code-edit" value="${data.zip_code}">
+                                          </div>
+
+                                          <div class="form-group">
+                                            <label for="pelak-edit">پلاک</label>
+                                            <input type="text" class="form-control" id="pelak-edit" name="pelak-edit" value="${data.pelak}">
+                                          </div>
+
+                                          <div class="form-group">
+                                            <label for="full-address-edit">آدرس کامل</label>
+                                            <textarea id="full-address-edit" name="full-address-edit" class="form-control" cols="30" rows="10">${data.full_address}</textarea>
+                                          </div>
+
+                                          <input type="hidden" value="${data.id}" name="address_id">
+                                          <button type="submit" class="btn btn-primary bg-primary mt-3">ثبت اطلاعات</button>
+                                        </form>
+
+                                    </div>
                                 </div>
                             `
                             //}
@@ -227,6 +345,44 @@
                         }
                     }) // end ajax
                 }) // end on (submit)
+
+
+
+            let deleteAddressFormClass = $('.delete-address-form');
+                deleteAddressFormClass.on('submit', function (e) {
+                    console.log('observer delete address====: ', observer.takeRecords().length)
+                    e.preventDefault();
+                    let formData = new FormData();
+                    formData.append('address_id', $(this).find('input[name=address_id]').val())
+                    $.ajax({
+                        url: 'http://127.0.0.1:8000/api/v1/address/',
+                        type: 'DELETE',
+                        dataType: 'json',
+                        cache: false,
+                        contentType: false,
+                        processData: false,
+                        data: formData,
+                        headers: {"X-CSRFToken": getCookie('csrftoken')},
+                        success: function (data){
+                            console.log('delete address====', data)
+                            $(e.target).parent().parent().remove()
+                        },
+                        error: function (rs, e) {
+                            console.log('error delete address ====', rs)
+                        }
+                    }) // end ajax
+                }) // end on submit
+
+
+                let orderPaymentbtn = $('#order-payment')
+                orderPaymentbtn.on('click', function (e) {
+                    {#e.preventDefault();#}
+                    let selectedAddress = $('#select-address').find(':selected').val()
+                    let order = JSON.parse(localStorage.getItem('order'))
+                    let orderAddress = order.address_set[selectedAddress]
+                    order.address_set = [orderAddress]
+                    localStorage.setItem('order', JSON.stringify(order))
+                })
 
 
                 // reverse timer
@@ -273,6 +429,12 @@
                     formData.append('first_name', $('#firstname-edit').val().trim());
                     formData.append('last_name', $('#lastname-edit').val().trim());
                     formData.append('phone', $('#phone-edit').val().trim());
+                    let profileImage = $('#image-edit').get(0).files[0]
+                    if (profileImage){
+                        formData.append('profile_image', profileImage);
+                    }
+                    {#formData.append('profile_image', $("input[type=file]").get(0).files[0]);#}
+                    {#.get(0).files[0]#}
                     $.ajax({
                         url: profileDetail.attr('href'),
                         type: "PATCH",
@@ -283,44 +445,10 @@
                         processData: false,
                         contentType: false,
                         success: function (data){
-                            profileAjaxArea.text('')
+                            let message = `<p class="alert alert-success">با موفقیت ثبت شد</p>`
+                            profileAjaxAreaMessage.text('')
+                            profileAjaxAreaMessage.append(message)
                             console.log(data)
-                            let profileFormUpdate = `
-                                <div class="row">
-                                    <div class="col-md-2"></div>
-                                    <div class="col-md-8">
-                                        <form action="/api/v1/profile/edit/${data.id}/" method="PATCH" class="container">
-                                            <div class="form-group">
-                                            <label for="firstname-edit">نام</label>
-                                            <input type="text" class="form-control" id="firstname-edit" value="${data.first_name}">
-                                          </div>
-                                              <div class="form-group">
-                                                <label for="lastname-edit">نام خانوادگی</label>
-                                                <input type="text" class="form-control" id="lastname-edit" value="${data.last_name}">
-                                              </div>
-
-                                          <div class="form-group">
-                                            <label for="email-edit">آدرس ایمیل</label>
-                                            <input type="email" class="form-control" id="email-edit" value="${data.email}">
-                                          </div>
-
-                                            <div class="form-group">
-                                                <label for="phone-edit">شماره تلفن</label>
-                                                <input type="text" class="form-control" id="phone-edit" value="${data.phone}">
-                                              </div>
-
-                                          <div class="form-group">
-                                            <label for="password-edit">Password</label>
-                                            <input type="password" class="form-control" id="password-edit" disabled>
-                                          </div>
-                <div class="text-success text-center">پروفایل با موفقیت ه روز شد</div>
-                                          <button type="submit" class="btn btn-primary bg-primary" id="update-profile">ثبت اطلاعات</button>
-                                        </form>
-                                    </div>
-                                <div class="col-md-2"></div>
-                            </div>
-                            `
-                            profileAjaxArea.append(profileFormUpdate)
                         },
                         error: function (rs, e) {
                         profileAjaxArea.text('')
@@ -480,6 +608,7 @@
 
                 let showSubmittedOrder = profileAjaxArea[0].querySelector('#show-submitted-order');
                 console.log(showSubmittedOrder)
+                if (showSubmittedOrder){
                 showSubmittedOrder.addEventListener('click', function (e){
                     e.preventDefault();
                     // get last order for pay
@@ -594,6 +723,7 @@
                         }
                     })
                 }) // end event listner (click)
+                } // end if
             }); // end observer
 
             // Pass in the target node, as well as the observer options.
@@ -658,6 +788,7 @@
             }) // end on (click)
 
             let profileDetail = $('#profile-detail');
+            console.log(profileDetail.attr('href'))
             profileDetail.on('click', function (e) {
                 e.preventDefault();
                 $.ajax({
@@ -674,7 +805,7 @@
                             <div class="row">
                                 <div class="col-md-2"></div>
                                 <div class="col-md-8">
-                                    <form action="/api/v1/profile/edit/${data.id}/" method="PATCH" class="container" id="update-profile-form">
+                                    <form action="/api/v1/profile/edit/${data.id}/" method="PATCH" class="container" id="update-profile-form" enctype="multipart/form-data">
                                         <div class="form-group">
                                         <label for="firstname-edit">نام</label>
                                         <input type="text" class="form-control" id="firstname-edit" value="${data.first_name}">
@@ -695,11 +826,12 @@
                                           </div>
 
                                       <div class="form-group">
-                                        <label for="password-edit">Password</label>
-                                        <input type="password" class="form-control" id="password-edit" disabled>
+                                        <label for="image-edit">تصویر</label>
+                                        <input type="file" class="form-control" id="image-edit" value="${data.profile_image}">
                                       </div>
+                                      <img src="${data.profile_image}" alt="user-image" class="rounded-circle border p-1" style="width: 120px; height: 120px"/>
 
-                                      <button type="submit" class="btn btn-primary bg-primary">ثبت اطلاعات</button>
+                                      <button type="submit" class="btn btn-primary bg-primary mt-3">ثبت اطلاعات</button>
                                     </form>
                                 </div>
                             <div class="col-md-2"></div>
@@ -739,6 +871,53 @@
                                     <span class="mx-1">${data[item].zip_code}</span>
                                     <span class="mx-1">${data[item].pelak}</span>
                                     <p class="mx-1 mt-3">آدرس کامل: ${data[item].full_address}</p>
+                                    <div class="d-flex justify-content-end">
+                                        <form action="#" id="delete-address-form" class="mx-1 delete-address-form">
+                                            <input type="submit" value="حذف" class="btn btn-danger bg-danger delete-address">
+                                            <input type="hidden" value="${data[item].id}" name="address_id" id="address-id${data[item].id}">
+                                        </form>
+                                        <button class="mx-1 btn btn-primary bg-primary edit-address">ویرایش</button>
+
+                                    <form action="#" class="container d-none edit-address-forms" id="edit-address-form">
+                                            <div class="form-group">
+                                            <label for="country-edit">کشور</label>
+                                            <input type="text" class="form-control" id="country-edit" name="country-edit" value="${data[item].country}">
+                                          </div>
+                                              <div class="form-group">
+                                                <label for="province-edit">استان</label>
+                                                <input type="text" class="form-control" id="province-edit" name="province-edit" value="${data[item].province}">
+                                              </div>
+
+                                          <div class="form-group">
+                                            <label for="city-edit">شهر</label>
+                                            <input type="text" class="form-control" id="city-edit" name="city-edit" value="${data[item].city}">
+                                          </div>
+
+                                            <div class="form-group">
+                                                <label for="street-edit">خیابان</label>
+                                                <input type="text" class="form-control" id="street-edit" name="street-edit" value="${data[item].street}">
+                                              </div>
+
+                                          <div class="form-group">
+                                            <label for="zip-code-edit">کد پستی</label>
+                                            <input type="text" class="form-control" id="zip-code-edit" name="zip-code-edit" value="${data[item].zip_code}">
+                                          </div>
+
+                                          <div class="form-group">
+                                            <label for="pelak-edit">پلاک</label>
+                                            <input type="text" class="form-control" id="pelak-edit" name="pelak-edit" value="${data[item].pelak}">
+                                          </div>
+
+                                          <div class="form-group">
+                                            <label for="full-address-edit">آدرس کامل</label>
+                                            <textarea name="full-address-edit" id="full-address-edit" class="form-control" cols="30" rows="10">${data[item].full_address}</textarea>
+                                          </div>
+
+                                          <input type="hidden" value="${data[item].id}" name="address_id">
+                                          <button type="submit" class="btn btn-primary bg-primary mt-3">ثبت اطلاعات</button>
+                                        </form>
+
+                                    </div>
                                 </div>
                             `
                             }
@@ -749,7 +928,8 @@
                                 <div class="col-md-2"></div>
                                 <div class="col-md-8 border rounded">
                                     <h4 class="text-center mt-3">اضافه کردن آدرس جدید</h4>
-                                    <form action="/api/v1/address/add/" method="POST" class="container p-2" id="create-address-form">
+                                    <form action="/api/v1/address/" method="POST" class="container p-2" id="create-address-form">
+                                    {% csrf_token %}
                                     <input type="hidden" id="user" value="">
                                     <div class="form-group">
                                             <label for="country">کشور</label>
@@ -798,6 +978,7 @@
                     }
                 })
             })// end on (click)
+
 
 
         }); // end ready

@@ -10,8 +10,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.response import Response
-from .mixins import StaffOrJwtLoginRequiredMixin
-
+from .mixins import StaffOrJwtLoginRequiredMixin, AuthenticatedAccessDeniedMixin
 
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
@@ -23,6 +22,9 @@ from .tasks import account_activation_token
 
 
 class Profile(StaffOrJwtLoginRequiredMixin, generic.View):
+    """
+    render profile template
+    """
     def get(self, request):
         return render(request, 'core/profile.html', {})
 
@@ -51,6 +53,7 @@ class Profile(StaffOrJwtLoginRequiredMixin, generic.View):
 
 
 def activate(request, uidb64, token):
+    """activate user account"""
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
         user = get_user_model().objects.get(pk=uid)
@@ -68,6 +71,7 @@ def activate(request, uidb64, token):
 
 
 def admin_logout(request):
+    """logout staff and admin user from django session and jwt"""
     print('admin logout ==========')
     if request.user.is_staff:
         HOME_URL = reverse('shop:landing_page')
@@ -77,11 +81,13 @@ def admin_logout(request):
         return response
 
 
-class Register(generic.View):
+class Register(AuthenticatedAccessDeniedMixin, generic.View):
+    """render register page template"""
     def get(self, request):
         return render(request, 'core/register.html', {})
 
 
-class LoginView(generic.View):
+class LoginView(AuthenticatedAccessDeniedMixin, generic.View):
+    """render login page template"""
     def get(self, request):
         return render(request, 'core/login.html', {})

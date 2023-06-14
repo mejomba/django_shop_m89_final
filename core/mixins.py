@@ -1,14 +1,14 @@
 from django.utils.text import gettext_lazy as _
-from django.shortcuts import render, redirect, reverse, get_object_or_404
-from django.contrib.auth.mixins import LoginRequiredMixin, AccessMixin
-from django.contrib.auth import login, get_user_model
+from django.shortcuts import render, redirect, reverse, get_object_or_404, HttpResponse
+from django.contrib.auth.mixins import AccessMixin
+from django.contrib.auth import get_user_model
 from django.contrib import messages
 import jwt
 from jwt import exceptions
 
 from django.http import HttpResponseRedirect, Http404
 
-from order.models import Cart
+from order.models import Cart, Order
 
 
 class AuthenticatedAccessDeniedMixin:
@@ -45,23 +45,23 @@ class StaffOrJwtLoginRequiredMixin(AccessMixin):
                 payload = jwt.decode(token, 'secret', algorithms=['HS256'])
                 user = get_user_model().objects.filter(id=payload['id']).first()
                 if not user:
-                    messages.error(request, 'برای استفاده از این صفحه ابتدا وارد شوید.')
+                    messages.error(request, _('برای استفاده از این صفحه ابتدا وارد شوید.'))
                     response.status_code = 401
                     return response
 
                 if not user.is_active:
-                    messages.info(request, 'حساب کاربری شما ایجاد شده اما فعال نشده، یک ایمیل فعال ساری برای شما ارسال کردیم روی ایمیل فعال سازی کلیک کنید.')
+                    messages.info(request, _('حساب کاربری شما ایجاد شده اما فعال نشده، یک ایمیل فعال ساری برای شما ارسال کردیم روی ایمیل فعال سازی کلیک کنید.'))
                     return redirect('shop:landing_page')
                 request.user = user
                 return super().dispatch(request, *args, **kwargs)
             except jwt.ExpiredSignatureError:
-                messages.error(request, 'اعتبار توکن احراز هویت شما به پایان رسیده است. دوباره وارد شوید.')
+                messages.error(request, _('اعتبار توکن احراز هویت شما به پایان رسیده است. دوباره وارد شوید.'))
                 return redirect(LOGIN)
             except exceptions.InvalidTokenError:
-                messages.error(request, 'توکن ارسال شده معتبر نمیباشد. دوباره وارد شوید.')
+                messages.error(request, _('توکن ارسال شده معتبر نمیباشد. دوباره وارد شوید.'))
                 return redirect(LOGIN)
         else:
-            messages.error(request, 'برای استفاده از این صفحه باید وارد شوید.')
+            messages.error(request, _('برای استفاده از این صفحه باید وارد شوید.'))
             return redirect(LOGIN)
 
 
@@ -85,10 +85,10 @@ class JWTRequiredForAuthenticateMixin:
 
             except jwt.ExpiredSignatureError:
                 response.delete_cookie('jwt')
-                messages.error(request, 'اعتبار توکن احراز هویت شما به پایان رسیده است. دوباره وارد شوید.')
+                messages.error(request, _('اعتبار توکن احراز هویت شما به پایان رسیده است. دوباره وارد شوید.'))
                 return response
             except exceptions.InvalidTokenError:
-                messages.error(request, 'توکن ارسال شده معتبر نمیباشد. دوباره وارد شوید.')
+                messages.error(request, _('توکن ارسال شده معتبر نمیباشد. دوباره وارد شوید.'))
                 response.delete_cookie('jwt')
                 return response
         else:
@@ -113,8 +113,19 @@ class ProfileAuthorMixin:
         user = get_object_or_404(get_user_model(), pk=pk)
         print(request.user, " ==== profile author mixin === ", user)
         if request.user == user:
+            return super().dispatch(request, pk, *args, **kwargs)
+        else:
+            raise Http404
+            # return HttpResponse('user not found', status=404)
+
+
+class OrderAuthorMixin:
+    def dispatch(self, request, pk, *args, **kwargs):
+        order = get_object_or_404(Order, pk=pk)
+        print(request.user, " ==== profile author mixin === ", order.user)
+        if request.user == order.user:
             return super().dispatch(request, *args, **kwargs)
         else:
             raise Http404
-
+            # return HttpResponse('user not found', status=404)
 

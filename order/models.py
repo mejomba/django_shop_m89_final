@@ -4,13 +4,13 @@ from django.utils import timezone
 
 import datetime
 
-from core.models import BaseModel, Address
+from core.models import BaseModel, Address, Discount
 from shop.models import Product
 
 
 class Cart(BaseModel):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='کاربر')
-
+    discount = models.ForeignKey(Discount, on_delete=models.SET_NULL, null=True, blank=True)
     # TODO "get total cart price base on final price of products"
     # def get_total_price(self):
     #     total = 0
@@ -23,12 +23,24 @@ class Cart(BaseModel):
         verbose_name = 'سبد خرید'
         verbose_name_plural = 'سبد خرید ها'
 
-    def get_cart_total_price(self):
+    def get_cart_total_price(self, discount_code=None):
         cart_item = self.cartitem_set.filter(is_deleted=False)
+        discount = Discount.objects.filter(code=discount_code).first()
+        print(discount)
+
         total_price = 0
+        total_tax = 0
         for item in cart_item:
-            price = item.product.get_final_price() * item.count
+            price = item.product.get_price_apply_discount() * item.count
+            tax_value = item.product.tax_value() * item.count
+            # price = item.product.get_final_price() * item.count
             total_price += price
+            total_tax += tax_value
+
+        if discount:
+            total_price -= total_price * (discount.percent/100)
+
+        total_price += total_tax
 
         return int(total_price)
 
@@ -74,13 +86,31 @@ class Order(BaseModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     address = models.ForeignKey(Address, on_delete=models.CASCADE, null=True, blank=True)
     time_for_pay = models.DateTimeField(verbose_name='زمال مجاز برای پرداخت', null=True, blank=True)
+    discount = models.ForeignKey(Discount, on_delete=models.SET_NULL, null=True, blank=True)
 
     def get_order_total_price(self):
-        cart_item = self.orderitem_set.filter(is_deleted=False)
+        order_item = self.orderitem_set.filter(is_deleted=False)
         total_price = 0
-        for item in cart_item:
-            price = item.product.get_final_price() * item.count
+        total_tax = 0
+        for item in order_item:
+            price = item.product.get_price_apply_discount() * item.count
+            tax_value = item.product.tax_value() * item.count
+            # price = item.product.get_final_price() * item.count
             total_price += price
+            total_tax += tax_value
+
+        if self.discount:
+            print('self discount=======', self.discount)
+            total_price -= total_price * (self.discount.percent / 100)
+
+        total_price += total_tax
+        # cart_item = self.orderitem_set.filter(is_deleted=False)
+        # total_price = 0
+        # for item in cart_item:
+        #     price = item.product.get_final_price() * item.count
+        #     total_price += price
+        # if self.discount:
+        #     total_price -= total_price * (self.discount.percent/100)
 
         return int(total_price)
 
