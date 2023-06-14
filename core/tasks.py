@@ -74,6 +74,6 @@ def send_sms(phone, otp_code):
     group_id = random.randint(0, 99999999)
     ws = restfulapi(settings.SMS_USER, settings.SMS_PASSWORD)
     msg = f'با سلام کد احراز هویت شما \n {otp_code}'
-    res = ws.SendMessage(PhoneNumber=settings.SMS_USER, Message=msg, Mobiles=[phone],
+    res = ws.SendMessage(PhoneNumber=settings.SMS_PHONE, Message=msg, Mobiles=[phone],
                          UserGroupID=str(group_id), SendDateInTimeStamp=time.time())
     print(res)
