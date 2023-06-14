@@ -36,19 +36,14 @@ class CreateAddressSerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    # get_price_apply_discount = serializers.Field()
-    # get_final_price = serializers.Field()
 
     class Meta:
         model = Product
-        print('__all__')
-        # fields = '__all__'
         fields = ['id', 'get_price_apply_discount', 'get_final_price', 'name', 'brand', 'price', 'thumbnail']
 
 
 class CartItemSerializer(serializers.ModelSerializer):
     product = ProductSerializer()
-    # cart = CartSerializer()
 
     class Meta:
         model = CartItem
@@ -57,7 +52,6 @@ class CartItemSerializer(serializers.ModelSerializer):
 
 class CartSerializerWithCurrentProduct(serializers.ModelSerializer):
     user = UserSerializer()
-    # cartitem_set = CartItemSerializer(many=True)
     cartitem_set = serializers.SerializerMethodField()
     current_product = ProductSerializer()
 
@@ -68,13 +62,11 @@ class CartSerializerWithCurrentProduct(serializers.ModelSerializer):
 
     class Meta:
         model = Cart
-        # fields = '__all__'
         fields = ['id', 'user', 'cartitem_set', 'current_product', 'get_cart_total_price']
 
 
 class CartSerializer(serializers.ModelSerializer):
     user = UserSerializer()
-    # cartitem_set = CartItemSerializer(many=True)
     cartitem_set = serializers.SerializerMethodField()
 
     def get_cartitem_set(self, cart):
@@ -84,13 +76,11 @@ class CartSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Cart
-        # fields = '__all__'
         fields = ['id', 'user', 'cartitem_set', 'get_cart_total_price']
 
 
 class CartSerializerWithDiscount(serializers.ModelSerializer):
     user = UserSerializer()
-    # cartitem_set = CartItemSerializer(many=True)
     cartitem_set = serializers.SerializerMethodField()
     get_cart_total_price = serializers.SerializerMethodField()
 
@@ -106,13 +96,11 @@ class CartSerializerWithDiscount(serializers.ModelSerializer):
 
     class Meta:
         model = Cart
-        # fields = '__all__'
         fields = ['id', 'user', 'cartitem_set', 'get_cart_total_price']
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
     product = ProductSerializer()
-    # cart = CartSerializer()
 
     class Meta:
         model = OrderItem
@@ -126,7 +114,6 @@ class OrderSerializer(serializers.ModelSerializer):
     shipping_display = serializers.SerializerMethodField()
     address_set = serializers.SerializerMethodField()
     address = AddressSerializer()
-    # address = AddressSerializer()
 
     def get_orderitem_set(self, order):
         qs = OrderItem.objects.filter(order_id=order, is_deleted=False)
