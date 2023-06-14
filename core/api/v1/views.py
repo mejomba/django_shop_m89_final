@@ -102,25 +102,31 @@ class LogoutAPI(APIView):
 
 
 class EditProfileAPI(ProfileAuthorMixin, APIView):
+    """GET/UPDATE user profile"""
+
+    serializer_class = UserSerializer
     def get(self, request, pk=None):
         serializer_ = UserSerializer(instance=request.user)
         return Response(serializer_.data)
 
     def patch(self, request):
-        print(request.data.get('profile_image'))
+        request.data._mutable = True
+        request.data['role'] = request.user.role
+        request.data['is_staff'] = request.user.is_staff
+        request.data['is_superuser'] = request.user.is_superuser
         if not request.data.get('profile_image'):
-            request.data._mutable = True
             request.data['profile_image'] = request.user.profile_image
-            print('request data mutable True')
 
         user = request.user
-        serializer_ = UserUpdateSerializer(user, data=request.data)
+        # serializer_ = UserUpdateSerializer(user, data=request.data)
+        serializer_ = UserSerializer(user, data=request.data)
         serializer_.is_valid(raise_exception=True)
         serializer_.save()
         return Response(serializer_.data)
 
 
 class AddressAPI(StaffOrJwtLoginRequiredMixin, APIView):
+    """CREATE/UPDATE/DELETE/GET address for authenticated user"""
     serializer_class = AddressSerializer
 
     def get(self, request):
@@ -140,7 +146,6 @@ class AddressAPI(StaffOrJwtLoginRequiredMixin, APIView):
 
     def delete(self, request):
         user = request.user
-        print('delete address====== ', request.data)
         address = Address.objects.filter(user=user, pk=int(request.data['address_id'])).first()
         address.is_deleted = True
         address.delete_date = timezone.now()
@@ -155,10 +160,8 @@ class AddressAPI(StaffOrJwtLoginRequiredMixin, APIView):
         request.data._mutable = True
         request.data['user'] = request.user.pk
 
-        print(address_id)
         if address_id:
             address = Address.objects.filter(pk=address_id).first()
-            print(address)
             serializer_ = AddressSerializer(address, data=request.data)
             serializer_.is_valid(raise_exception=True)
             serializer_.save()

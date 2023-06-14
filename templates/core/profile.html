@@ -127,7 +127,8 @@
                                                 </div>
                                                 {% csrf_token %}
                                             </form>
-                                            <form action="/api/v1/cart/submit/" method="post" id="cart-to-order-form">
+                                            {#<form action="/api/v1/cart/" method="post" id="cart-to-order-form">#}
+                                            <form action="/api/v1/order/create/" method="post" id="cart-to-order-form">
                                                 {% csrf_token %}
                                                 <button type="submit" class="btn btn-primary bg-primary">ثبت سفارش</button>
                                             </form>

@@ -8,7 +8,7 @@ from jwt import exceptions
 
 from django.http import HttpResponseRedirect, Http404
 
-from order.models import Cart
+from order.models import Cart, Order
 
 
 class AuthenticatedAccessDeniedMixin:
@@ -113,9 +113,19 @@ class ProfileAuthorMixin:
         user = get_object_or_404(get_user_model(), pk=pk)
         print(request.user, " ==== profile author mixin === ", user)
         if request.user == user:
-            return super().dispatch(request, *args, **kwargs)
+            return super().dispatch(request, pk, *args, **kwargs)
         else:
             raise Http404
             # return HttpResponse('user not found', status=404)
 
+
+class OrderAuthorMixin:
+    def dispatch(self, request, pk, *args, **kwargs):
+        order = get_object_or_404(Order, pk=pk)
+        print(request.user, " ==== profile author mixin === ", order.user)
+        if request.user == order.user:
+            return super().dispatch(request, *args, **kwargs)
+        else:
+            raise Http404
+            # return HttpResponse('user not found', status=404)
 
