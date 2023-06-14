@@ -8,7 +8,6 @@ from django.db import models
 from django.utils.text import slugify
 
 from core.models import BaseModel, Discount
-from core import utils
 from core.models_on_delete import SOFT_CASCADE
 
 
@@ -17,6 +16,31 @@ def post_image_file_path(instance, filename: str):
     ext = filename.split('.')[-1]
     filename = f'{uuid.uuid4()}.{ext}'
     return os.path.join(f'uploads/post/{timezone.now().date()}', filename)
+
+
+def discount_solver(product_instance):
+    sum_mablagh = 0
+    sum_percent = 0
+    categories = product_instance.category.all()
+
+    all_discounts = [c.discount.all() for c in categories]
+    all_discounts.append(product_instance.discount.all())
+
+    for queryset in all_discounts:
+        for discount in queryset:
+            limit = discount.limit
+            if limit is None or limit > 0:
+                if (p := discount.percent) and (m := discount.mablagh):
+                    if product_instance.price * (p / 100) > m:
+                        sum_mablagh += m
+                    else:
+                        sum_percent += p
+                elif p := discount.percent:
+                    sum_percent += p
+                elif m := discount.mablagh:
+                    sum_mablagh += m
+
+    return sum_mablagh, sum_percent
 
 
 class CategoryManager(models.Manager):
@@ -86,7 +110,7 @@ class Product(BaseModel):
 
     def get_price_apply_discount(self):
         price = self.price
-        sum_mablagh, sum_percent = utils.discount_solver(self)
+        sum_mablagh, sum_percent = discount_solver(self)
 
         if sum_mablagh >= price or sum_percent >= 100:
             return 0

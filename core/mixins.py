@@ -8,8 +8,10 @@ from jwt import exceptions
 
 from django.http import HttpResponseRedirect, Http404
 
+from config import settings
 from order.models import Cart, Order
 
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 class AuthenticatedAccessDeniedMixin:
     def dispatch(self, request, *args, **kwargs):
@@ -21,8 +23,9 @@ class AuthenticatedAccessDeniedMixin:
 
         if token := request.COOKIES.get('jwt'):
             try:
-                payload = jwt.decode(token, 'secret', algorithms=['HS256'])
-                user = get_user_model().objects.filter(id=payload['id']).first()
+                payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+                user = get_user_model().objects.filter(id=payload.get('id')).first() or \
+                       get_user_model().objects.filter(id=payload.get('user_id')).first()
                 if user and user.is_active:
                     request.user = user
                     return redirect(PROFILE_URL)
@@ -42,8 +45,9 @@ class StaffOrJwtLoginRequiredMixin(AccessMixin):
             return super().dispatch(request, *args, **kwargs)
         if token := request.COOKIES.get('jwt'):
             try:
-                payload = jwt.decode(token, 'secret', algorithms=['HS256'])
-                user = get_user_model().objects.filter(id=payload['id']).first()
+                payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+                user = get_user_model().objects.filter(id=payload.get('id')).first() or \
+                       get_user_model().objects.filter(id=payload.get('user_id')).first()
                 if not user:
                     messages.error(request, _('برای استفاده از این صفحه ابتدا وارد شوید.'))
                     response.status_code = 401
@@ -73,8 +77,9 @@ class JWTRequiredForAuthenticateMixin:
         if token := request.COOKIES.get('jwt'):
             response = HttpResponseRedirect(LOGIN_URL)
             try:
-                payload = jwt.decode(token, 'secret', algorithms=['HS256'])
-                user = get_user_model().objects.filter(id=payload['id']).first()
+                payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+                user = get_user_model().objects.filter(id=payload.get('id')).first() or \
+                       get_user_model().objects.filter(id=payload.get('user_id')).first()
                 if not user:
                     response.delete_cookie('jwt')
                     return response

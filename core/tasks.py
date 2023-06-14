@@ -7,10 +7,12 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.utils.text import gettext_lazy as _
 from django.conf import settings
+from django.utils import timezone
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 import six
 import random
 from core.raigansms import restfulapi
+from order.models import Order
 
 # from core.utils import account_activation_token
 
@@ -77,3 +79,12 @@ def send_sms(phone, otp_code):
     res = ws.SendMessage(PhoneNumber=settings.SMS_PHONE, Message=msg, Mobiles=[phone],
                          UserGroupID=str(group_id), SendDateInTimeStamp=time.time())
     print(res)
+
+@shared_task
+def check_order_status():
+    print('task execute')
+    orders = Order.objects.filter(time_for_pay__lt=timezone.now(), status__in=['1', '3'])
+    for order in orders:
+        print('order for change status === ', order)
+        order.status = '4'
+        order.save()
