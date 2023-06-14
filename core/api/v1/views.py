@@ -12,7 +12,7 @@ from rest_framework.response import Response
 import jwt
 
 from core.mixins import AuthenticatedAccessDeniedMixin, StaffOrJwtLoginRequiredMixin, ProfileAuthorMixin
-from shop.api.v1.serializers import AddressSerializer2, CreateAddressSerializer
+from shop.api.v1.serializers import AddressSerializer2, CreateAddressSerializer, AddressSerializer
 from .serializers import UserSerializer, UserRegisterSerializer, UserUpdateSerializer
 from core.tasks import send_confirmation_email
 from core import utils
@@ -108,6 +108,11 @@ class EditProfileAPI(ProfileAuthorMixin, APIView):
         return Response(serializer_.data)
 
     def patch(self, request):
+        print(request.data.get('profile_image'))
+        if not request.data.get('profile_image'):
+            request.data._mutable = True
+            request.data['profile_image'] = request.user.profile_image
+
         user = request.user
         serializer_ = UserUpdateSerializer(user, data=request.data)
         serializer_.is_valid(raise_exception=True)
@@ -143,5 +148,15 @@ class AddressAPI(StaffOrJwtLoginRequiredMixin, APIView):
         serializer_ = AddressSerializer2(instance=address, many=True)
         return Response(serializer_.data)
 
-    # def patch(self, request):
-    #     pass
+    def patch(self, request):
+        address_id = request.data.get('address_id')
+        print(address_id)
+        if address_id:
+            address = Address.objects.filter(pk=address_id).first()
+            print(address)
+            serializer_ = AddressSerializer(address, data=request.data)
+            serializer_.is_valid(raise_exception=True)
+            serializer_.save()
+            return Response(serializer_.data, status=status.HTTP_206_PARTIAL_CONTENT)
+        else:
+            return Response({'detail': 'address_id invalid'}, status=status.HTTP_400_BAD_REQUEST)

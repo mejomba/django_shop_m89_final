@@ -5,6 +5,7 @@ from ... import models
 import re
 
 from .exception import PasswordValidation
+from ...models import user_image_file_path
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):
@@ -48,6 +49,16 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):
+    profile_image = serializers.ImageField(required=False)
+
+    def validate_profile_image(self, image):
+        # 2MB
+        MAX_FILE_SIZE = 2000000
+        if image.size > MAX_FILE_SIZE:
+            print(image.size)
+            raise serializers.ValidationError("File size too big!")
+        return image
+
     class Meta:
         model = get_user_model()
-        fields = ['id', 'email', 'first_name', 'last_name', 'phone']
+        fields = ['id', 'email', 'first_name', 'last_name', 'phone', 'profile_image']

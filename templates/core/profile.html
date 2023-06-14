@@ -212,6 +212,45 @@
 
             var observer = new MutationObserver(function(mutations) {
 
+                let editAddressBtn = $('.edit-address')
+                console.log('edit address btn====', editAddressBtn)
+                editAddressBtn.on('click', function (e) {
+                    e.preventDefault();
+                    console.log(this.nextElementSibling)
+                    this.nextElementSibling.classList.remove('d-none')
+                    this.classList.add('d-none')
+                    this.previousElementSibling.classList.add('d-none')
+                })
+
+                let editAddressForms = $('.edit-address-forms')
+                editAddressForms.on('submit', function (e) {
+                    e.preventDefault();
+                    let formData = new FormData();
+                    formData.append('country', $(this).find('input[name=country-edit]').val())
+                    formData.append('province', $(this).find('input[name=province-edit]').val())
+                    formData.append('city', $(this).find('input[name=city-edit]').val())
+                    formData.append('street', $(this).find('input[name=street-edit]').val())
+                    formData.append('zip_code', $(this).find('input[name=zip-code-edit]').val())
+                    formData.append('pelak', $(this).find('input[name=pelak-edit]').val())
+                    formData.append('full_address', $(this).find('textarea[name=full-address-edit]').val())
+                    formData.append('address_id', $(this).find('input[name=address_id]').val())
+                    $.ajax({
+                        url: '/api/v1/address/edit/',
+                        type: 'PATCH',
+                        data: formData,
+                        headers: {"X-CSRFToken": getCookie('csrftoken')},
+                        cache: false,
+                        contentType: false,
+                        processData: false,
+                        success: function (data){
+                            console.log('address edit success: ', data)
+                        },
+                        error: function (rs, e) {
+                            console.log('address edit error: ', rs)
+                        }
+                    })
+                }) // end on submit
+
                 let createAddressForm = $('#create-address-form');
                 console.log('create address form ======', createAddressForm)
                 createAddressForm.on('submit', function (e) {
@@ -251,10 +290,48 @@
                                             <input type="submit" value="حذف" class="btn btn-danger bg-danger delete-address">
                                             <input type="hidden" value="${data.id}" name="address_id">
                                         </form>
-                                        <form action="#" class="mx-1 edit-address-form">
-                                            <input type="submit" value="ویرایش" class="btn btn-primary bg-primary edit-address">
-                                            <input type="hidden" value="${data.id}" name="address_id"">
+
+                                    <button class="mx-1 btn btn-primary bg-primary edit-address">ویرایش</button>
+
+                                    <form action="#" class="container d-none edit-address-forms" id="edit-address-form">
+                                            <div class="form-group">
+                                            <label for="country-edit">کشور</label>
+                                            <input type="text" class="form-control" id="country-edit" name="country-edit" value="${data.country}">
+                                          </div>
+                                              <div class="form-group">
+                                                <label for="province-edit">استان</label>
+                                                <input type="text" class="form-control" id="province-edit" name="province-edit" value="${data.province}">
+                                              </div>
+
+                                          <div class="form-group">
+                                            <label for="city-edit">شهر</label>
+                                            <input type="text" class="form-control" id="city-edit" name="city-edit" value="${data.city}">
+                                          </div>
+
+                                            <div class="form-group">
+                                                <label for="street-edit">خیابان</label>
+                                                <input type="text" class="form-control" id="street-edit" name="street-edit" value="${data.street}">
+                                              </div>
+
+                                          <div class="form-group">
+                                            <label for="zip-code-edit">کد پستی</label>
+                                            <input type="text" class="form-control" id="zip-code-edit" name="zip-code-edit" value="${data.zip_code}">
+                                          </div>
+
+                                          <div class="form-group">
+                                            <label for="pelak-edit">پلاک</label>
+                                            <input type="text" class="form-control" id="pelak-edit" name="pelak-edit" value="${data.pelak}">
+                                          </div>
+
+                                          <div class="form-group">
+                                            <label for="full-address-edit">آدرس کامل</label>
+                                            <textarea id="full-address-edit" name="full-address-edit" class="form-control" cols="30" rows="10">${data.full_address}</textarea>
+                                          </div>
+
+                                          <input type="hidden" value="${data.id}" name="address_id">
+                                          <button type="submit" class="btn btn-primary bg-primary mt-3">ثبت اطلاعات</button>
                                         </form>
+
                                     </div>
                                 </div>
                             `
@@ -351,6 +428,12 @@
                     formData.append('first_name', $('#firstname-edit').val().trim());
                     formData.append('last_name', $('#lastname-edit').val().trim());
                     formData.append('phone', $('#phone-edit').val().trim());
+                    let profileImage = $('#image-edit').get(0).files[0]
+                    if (profileImage){
+                        formData.append('profile_image', profileImage);
+                    }
+                    {#formData.append('profile_image', $("input[type=file]").get(0).files[0]);#}
+                    {#.get(0).files[0]#}
                     $.ajax({
                         url: profileDetail.attr('href'),
                         type: "PATCH",
@@ -720,7 +803,7 @@
                             <div class="row">
                                 <div class="col-md-2"></div>
                                 <div class="col-md-8">
-                                    <form action="/api/v1/profile/edit/${data.id}/" method="PATCH" class="container" id="update-profile-form">
+                                    <form action="/api/v1/profile/edit/${data.id}/" method="PATCH" class="container" id="update-profile-form" enctype="multipart/form-data">
                                         <div class="form-group">
                                         <label for="firstname-edit">نام</label>
                                         <input type="text" class="form-control" id="firstname-edit" value="${data.first_name}">
@@ -741,11 +824,12 @@
                                           </div>
 
                                       <div class="form-group">
-                                        <label for="password-edit">Password</label>
-                                        <input type="password" class="form-control" id="password-edit" disabled>
+                                        <label for="image-edit">تصویر</label>
+                                        <input type="file" class="form-control" id="image-edit" value="${data.profile_image}">
                                       </div>
+                                      <img src="${data.profile_image}" alt="user-image" class="rounded-circle border p-1" style="width: 120px; height: 120px"/>
 
-                                      <button type="submit" class="btn btn-primary bg-primary">ثبت اطلاعات</button>
+                                      <button type="submit" class="btn btn-primary bg-primary mt-3">ثبت اطلاعات</button>
                                     </form>
                                 </div>
                             <div class="col-md-2"></div>
@@ -790,10 +874,47 @@
                                             <input type="submit" value="حذف" class="btn btn-danger bg-danger delete-address">
                                             <input type="hidden" value="${data[item].id}" name="address_id" id="address-id${data[item].id}">
                                         </form>
-                                        <form action="#" id="edit-address-form" class="mx-1 edit-address-form">
-                                            <input type="submit" value="ویرایش" class="btn btn-primary bg-primary edit-address">
-                                            <input type="hidden" value="${data[item].id}" name="address_id" id="address-id${data[item].id}">
+                                        <button class="mx-1 btn btn-primary bg-primary edit-address">ویرایش</button>
+
+                                    <form action="#" class="container d-none edit-address-forms" id="edit-address-form">
+                                            <div class="form-group">
+                                            <label for="country-edit">کشور</label>
+                                            <input type="text" class="form-control" id="country-edit" name="country-edit" value="${data[item].country}">
+                                          </div>
+                                              <div class="form-group">
+                                                <label for="province-edit">استان</label>
+                                                <input type="text" class="form-control" id="province-edit" name="province-edit" value="${data[item].province}">
+                                              </div>
+
+                                          <div class="form-group">
+                                            <label for="city-edit">شهر</label>
+                                            <input type="text" class="form-control" id="city-edit" name="city-edit" value="${data[item].city}">
+                                          </div>
+
+                                            <div class="form-group">
+                                                <label for="street-edit">خیابان</label>
+                                                <input type="text" class="form-control" id="street-edit" name="street-edit" value="${data[item].street}">
+                                              </div>
+
+                                          <div class="form-group">
+                                            <label for="zip-code-edit">کد پستی</label>
+                                            <input type="text" class="form-control" id="zip-code-edit" name="zip-code-edit" value="${data[item].zip_code}">
+                                          </div>
+
+                                          <div class="form-group">
+                                            <label for="pelak-edit">پلاک</label>
+                                            <input type="text" class="form-control" id="pelak-edit" name="pelak-edit" value="${data[item].pelak}">
+                                          </div>
+
+                                          <div class="form-group">
+                                            <label for="full-address-edit">آدرس کامل</label>
+                                            <textarea name="full-address-edit" id="full-address-edit" class="form-control" cols="30" rows="10">${data[item].full_address}</textarea>
+                                          </div>
+
+                                          <input type="hidden" value="${data[item].id}" name="address_id">
+                                          <button type="submit" class="btn btn-primary bg-primary mt-3">ثبت اطلاعات</button>
                                         </form>
+
                                     </div>
                                 </div>
                             `
@@ -855,6 +976,7 @@
                     }
                 })
             })// end on (click)
+
 
 
         }); // end ready
