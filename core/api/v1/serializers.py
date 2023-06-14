@@ -8,6 +8,10 @@ from .exception import PasswordValidation
 from ...models import user_image_file_path
 
 
+class LoginVerificationSerializer(serializers.Serializer):
+    jwt = serializers.CharField()
+
+
 class UserRegisterSerializer(serializers.ModelSerializer):
     
     class Meta:

@@ -11,9 +11,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 import jwt
 
+from config import settings
 from core.mixins import AuthenticatedAccessDeniedMixin, StaffOrJwtLoginRequiredMixin, ProfileAuthorMixin
 from shop.api.v1.serializers import AddressSerializer2, CreateAddressSerializer, AddressSerializer
-from .serializers import UserSerializer, UserRegisterSerializer, UserUpdateSerializer
+from .serializers import UserSerializer, UserRegisterSerializer, UserUpdateSerializer, LoginVerificationSerializer
 from core.tasks import send_confirmation_email
 from core import utils
 from ...models import Address
@@ -57,6 +58,7 @@ class LoginAPI(AuthenticatedAccessDeniedMixin, APIView):
 
 
 class LoginVerification(AuthenticatedAccessDeniedMixin, APIView):
+    serializer_class = LoginVerificationSerializer
 
     def post(self, request):
         otp_code = request.POST.get('otp_code')
@@ -70,12 +72,12 @@ class LoginVerification(AuthenticatedAccessDeniedMixin, APIView):
             user.save()
 
             payload = {
-                'id': user.id,
+                'user_id': user.id,
                 'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=10),
                 'iat': datetime.datetime.utcnow()
             }
 
-            token = jwt.encode(payload, 'secret', algorithm='HS256')
+            token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
 
             response = Response()
             response.set_cookie(key='jwt', value=token, httponly=True)
