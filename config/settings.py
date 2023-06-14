@@ -13,6 +13,9 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 from pathlib import Path
 import os
 from django.contrib.messages import constants as messages
+import environ
+
+env = environ.Env(DEBUG=(bool, False))
 
 
 MESSAGE_TAGS = {
@@ -25,15 +28,17 @@ MESSAGE_TAGS = {
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+environ.Env.read_env(os.path.join(BASE_DIR, 'config/.env'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-%bzp0(n=y7@1!+cuajtpvxp^@3#a(zrq%doqhx=i1l++%e$=(*'
+# SECRET_KEY = 'django-insecure-%bzp0(n=y7@1!+cuajtpvxp^@3#a(zrq%doqhx=i1l++%e$=(*'
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env('DEBUG')
 
 ALLOWED_HOSTS = ['127.0.0.1', '192.168.1.102']
 
@@ -108,11 +113,11 @@ DATABASES = {
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#         'NAME': 'django_shop_m89',
-#         'USER': 'postgres',
-#         'PASSWORD': '1',
-#         'HOST': 'localhost',
-#         'PORT': '5434',
+#         'NAME': env('DATABASE_NAME'),
+#         'USER': env('DATABASE_USER'),
+#         'PASSWORD': env('DATABASE_PASSWORD'),
+#         'HOST': env('DATABASE_HOST'),
+#         'PORT': env('DATABASE_PORT'),
 #     }
 # }
 
@@ -189,10 +194,10 @@ CORS_ALLOW_CREDENTIALS = True
 
 # ========== email settings ==========
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_FROM = 'mejomba1@gmail.com'
-EMAIL_HOST_USER = 'mejomba1@gmail.com'
-EMAIL_HOST_PASSWORD = 'pommfofobnouxxsm'
+EMAIL_HOST = env('EMAIL_HOST')
+EMAIL_FROM = env('EMAIL_FROM')
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
@@ -220,6 +225,6 @@ CELERY_TIMEZONE = 'UTC'
 # ========== sms settings ==========
 # SMS_PHONE = '983000685995'
 # SMS_PHONE = '985000248725'
-SMS_PHONE = '9850002200889037'
-SMS_USER = 'mejomba'
-SMS_PASSWORD = 'Aa09360521688'
+SMS_PHONE = env('SMS_PHONE')
+SMS_USER = env('SMS_USER')
+SMS_PASSWORD = env('SMS_PASSWORD')
