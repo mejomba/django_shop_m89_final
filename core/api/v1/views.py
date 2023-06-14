@@ -102,8 +102,7 @@ class LogoutAPI(APIView):
 
 
 class EditProfileAPI(ProfileAuthorMixin, APIView):
-
-    def get(self, request):
+    def get(self, request, pk=None):
         serializer_ = UserSerializer(instance=request.user)
         return Response(serializer_.data)
 
@@ -112,6 +111,7 @@ class EditProfileAPI(ProfileAuthorMixin, APIView):
         if not request.data.get('profile_image'):
             request.data._mutable = True
             request.data['profile_image'] = request.user.profile_image
+            print('request data mutable True')
 
         user = request.user
         serializer_ = UserUpdateSerializer(user, data=request.data)
@@ -121,9 +121,11 @@ class EditProfileAPI(ProfileAuthorMixin, APIView):
 
 
 class AddressAPI(StaffOrJwtLoginRequiredMixin, APIView):
+    serializer_class = AddressSerializer
+
     def get(self, request):
         address = Address.objects.filter(user=request.user, is_deleted=False)
-        serializer_ = AddressSerializer2(instance=address, many=True)
+        serializer_ = AddressSerializer(instance=address, many=True)
         return Response(serializer_.data)
 
     def post(self, request):
@@ -131,7 +133,7 @@ class AddressAPI(StaffOrJwtLoginRequiredMixin, APIView):
         request.data['user'] = request.user.pk
         request.data._mutable = False
 
-        serializer_ = CreateAddressSerializer(data=request.data)
+        serializer_ = AddressSerializer(data=request.data)
         serializer_.is_valid(raise_exception=True)
         serializer_.save()
         return Response(serializer_.data)
@@ -145,11 +147,14 @@ class AddressAPI(StaffOrJwtLoginRequiredMixin, APIView):
         address.save()
 
         address = Address.objects.filter(user=request.user, is_deleted=False)
-        serializer_ = AddressSerializer2(instance=address, many=True)
+        serializer_ = AddressSerializer(instance=address, many=True)
         return Response(serializer_.data)
 
     def patch(self, request):
         address_id = request.data.get('address_id')
+        request.data._mutable = True
+        request.data['user'] = request.user.pk
+
         print(address_id)
         if address_id:
             address = Address.objects.filter(pk=address_id).first()

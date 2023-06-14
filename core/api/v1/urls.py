@@ -14,7 +14,7 @@ urlpatterns = [
     path('v1/login/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('v1/profile/edit/<int:pk>/', views.EditProfileAPI.as_view(), name='edit_profile'),
     path('v1/address/', views.AddressAPI.as_view(), name='address'),
-    path('v1/address/add/', views.AddressAPI.as_view(), name='address_add'),
-    path('v1/address/delete/', views.AddressAPI.as_view(), name='address_delete'),
-    path('v1/address/edit/', views.AddressAPI.as_view(), name='address_edit'),
+    # path('v1/address/add/', views.AddressAPI.as_view(), name='address_add'),
+    # path('v1/address/delete/', views.AddressAPI.as_view(), name='address_delete'),
+    # path('v1/address/edit/', views.AddressAPI.as_view(), name='address_edit'),
 ]

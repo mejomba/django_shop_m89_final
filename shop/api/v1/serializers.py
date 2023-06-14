@@ -17,7 +17,7 @@ class AddressSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Address
-        exclude = ['user']
+        exclude = ['is_deleted', 'delete_date']
 
 
 class AddressSerializer2(serializers.ModelSerializer):
@@ -29,7 +29,6 @@ class AddressSerializer2(serializers.ModelSerializer):
 
 
 class CreateAddressSerializer(serializers.ModelSerializer):
-    # user = UserSerializer()
 
     class Meta:
         model = Address

@@ -235,7 +235,7 @@
                     formData.append('full_address', $(this).find('textarea[name=full-address-edit]').val())
                     formData.append('address_id', $(this).find('input[name=address_id]').val())
                     $.ajax({
-                        url: '/api/v1/address/edit/',
+                        url: '/api/v1/address/',
                         type: 'PATCH',
                         data: formData,
                         headers: {"X-CSRFToken": getCookie('csrftoken')},
@@ -354,7 +354,7 @@
                     let formData = new FormData();
                     formData.append('address_id', $(this).find('input[name=address_id]').val())
                     $.ajax({
-                        url: 'http://127.0.0.1:8000/api/v1/address/delete/',
+                        url: 'http://127.0.0.1:8000/api/v1/address/',
                         type: 'DELETE',
                         dataType: 'json',
                         cache: false,
@@ -787,6 +787,7 @@
             }) // end on (click)
 
             let profileDetail = $('#profile-detail');
+            console.log(profileDetail.attr('href'))
             profileDetail.on('click', function (e) {
                 e.preventDefault();
                 $.ajax({
@@ -926,7 +927,7 @@
                                 <div class="col-md-2"></div>
                                 <div class="col-md-8 border rounded">
                                     <h4 class="text-center mt-3">اضافه کردن آدرس جدید</h4>
-                                    <form action="/api/v1/address/add/" method="POST" class="container p-2" id="create-address-form">
+                                    <form action="/api/v1/address/" method="POST" class="container p-2" id="create-address-form">
                                     {% csrf_token %}
                                     <input type="hidden" id="user" value="">
                                     <div class="form-group">

@@ -1,5 +1,5 @@
 from django.utils.text import gettext_lazy as _
-from django.shortcuts import render, redirect, reverse, get_object_or_404
+from django.shortcuts import render, redirect, reverse, get_object_or_404, HttpResponse
 from django.contrib.auth.mixins import AccessMixin
 from django.contrib.auth import get_user_model
 from django.contrib import messages
@@ -116,5 +116,6 @@ class ProfileAuthorMixin:
             return super().dispatch(request, *args, **kwargs)
         else:
             raise Http404
+            # return HttpResponse('user not found', status=404)
 
 
