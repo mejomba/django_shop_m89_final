@@ -176,7 +176,7 @@ class Comment(BaseModel):
         verbose_name_plural = 'نظر ها'
 
     def __str__(self):
-        return f'{self.content}'
+        return f'{self.content} : {self.user}'
 
 
 class MagicSaleManager(models.Manager):
