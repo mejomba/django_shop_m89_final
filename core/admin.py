@@ -6,7 +6,7 @@ from . import models
 
 class CustomUserAdmin(UserAdmin):
     ordering = ('-id',)
-    list_display = ['email', 'first_name', 'last_name', 'jlast_update', 'display_profile_image']
+    list_display = ['email', 'first_name', 'last_name', 'jlast_update', 'display_profile_image', 'role', 'is_superuser']
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
         (_('Personal Info'), {'fields': ('first_name', 'last_name', 'profile_image')}),

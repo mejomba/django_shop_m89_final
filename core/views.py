@@ -10,6 +10,9 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.response import Response
+
+from order.models import Order
+from shop.models import Product
 from .mixins import StaffOrJwtLoginRequiredMixin, AuthenticatedAccessDeniedMixin
 
 from django.utils.http import urlsafe_base64_decode
@@ -91,3 +94,14 @@ class LoginView(AuthenticatedAccessDeniedMixin, generic.View):
     """render login page template"""
     def get(self, request):
         return render(request, 'core/login.html', {})
+
+
+def search(request):
+    query = request.GET.get('query')
+    referer = request.META.get('HTTP_REFERER')
+    if query:
+        products = Product.objects.filter(name__icontains=query)
+        context = {'products': products}
+        return render(request, 'shop/search_result.html', context)
+    else:
+        return redirect(referer)
