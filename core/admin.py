@@ -20,15 +20,15 @@ class CustomUserAdmin(UserAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'password1', 'password2',)
+            'fields': ('email', 'password1', 'password2', 'phone')
         }),
     )
 
     list_filter = ('role', 'is_active', 'is_staff')
     search_fields = ('email', 'first_name')
 
-    def get_queryset(self, request):
-        return self.model.objects.filter(is_deleted=False)
+    # def get_queryset(self, request):
+    #     return self.model.objects.filter(is_deleted=False)
 
     def delete_queryset(self, request, queryset):
         for user in queryset:
@@ -69,3 +69,5 @@ class AdminDiscount(admin.ModelAdmin):
 admin.site.register(models.User, CustomUserAdmin)
 admin.site.register(models.Address, AdminAddress)
 admin.site.register(models.Discount, AdminDiscount)
+
+admin.site.site_header = 'پنل مدیر فروشگاه'

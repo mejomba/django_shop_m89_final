@@ -75,7 +75,8 @@ class CommentAdmin(admin.ModelAdmin):
               'rating',
               'parent_comment',
               'product',
-              'user',)
+              'user',
+              'is_deleted',)
 
     class Meta:
         model = models.Comment

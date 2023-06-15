@@ -10,14 +10,14 @@ from rest_framework.reverse import reverse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 import jwt
-
+from django.shortcuts import get_object_or_404
 from config import settings
 from core.mixins import AuthenticatedAccessDeniedMixin, StaffOrJwtLoginRequiredMixin, ProfileAuthorMixin
 from shop.api.v1.serializers import AddressSerializer2, CreateAddressSerializer, AddressSerializer
 from .serializers import UserSerializer, UserRegisterSerializer, UserUpdateSerializer, LoginVerificationSerializer
 from core.tasks import send_confirmation_email
 from core import utils
-from ...models import Address
+from core.models import Address
 
 
 class RegisterUserAPI(AuthenticatedAccessDeniedMixin, APIView):
@@ -44,7 +44,7 @@ class LoginAPI(AuthenticatedAccessDeniedMixin, APIView):
         user = get_user_model().objects.filter(email=email).first()
 
         if user is None:
-            return Response({'detail': 'کاربر با این مشخصات یافت نشد'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'detail': 'کاربر با این مشخصات یافت نشد'}, status=status.HTTP_404_NOT_FOUND)
 
         if not user.check_password(password):
             return Response({'detail': 'رمز عبور اشتباه'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -111,7 +111,7 @@ class EditProfileAPI(ProfileAuthorMixin, APIView):
         serializer_ = UserSerializer(instance=request.user)
         return Response(serializer_.data)
 
-    def patch(self, request):
+    def patch(self, request, pk=None):
         request.data._mutable = True
         request.data['role'] = request.user.role
         request.data['is_staff'] = request.user.is_staff
