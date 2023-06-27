@@ -16,6 +16,7 @@ class ProductAdmin(admin.ModelAdmin):
 
     list_display = ('name', 'brand', 'price', 'quantity', 'get_price_apply_discount', 'get_price_apply_tax')
     list_filter = ['category', 'brand']
+    search_fields = ('name', 'brand')
     fields = ('name',
               'slug',
               'brand',
