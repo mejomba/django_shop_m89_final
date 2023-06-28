@@ -23,7 +23,8 @@ def perform_2step_verification(user, auth_type):
     if auth_type == 'sms':
         send_sms.delay(user.phone, otp_code)
     elif auth_type == 'email':
-        send_otp_email.delay(user.email, otp_code)
+        # send_otp_email.delay(user.email, otp_code)
+        send_otp_email(user.email, otp_code)
     print('otp: ', otp_code)
 
 

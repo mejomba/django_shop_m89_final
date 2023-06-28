@@ -34,13 +34,15 @@ environ.Env.read_env(os.path.join(BASE_DIR, 'config/.env'))
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# SECRET_KEY = 'django-insecure-%bzp0(n=y7@1!+cuajtpvxp^@3#a(zrq%doqhx=i1l++%e$=(*'
+# SECRET_KEY = 'ef02abfcf72ea3710820ca1522f0109bc53373451b795a50060850b69f7d21bb1ae23e4ee11c42fd6b11f1c45973743912df'
 SECRET_KEY = env('SECRET_KEY')
+# SECRET_KEY = os.environ['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG')
+# DEBUG = os.environ['DEBUG'].lower() in ['true', '1']
 
-ALLOWED_HOSTS = ['127.0.0.1', '192.168.1.102']
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -106,22 +108,23 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#         'NAME': env('DATABASE_NAME'),
-#         'USER': env('DATABASE_USER'),
-#         'PASSWORD': env('DATABASE_PASSWORD'),
-#         'HOST': env('DATABASE_HOST'),
-#         'PORT': env('DATABASE_PORT'),
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
 #     }
 # }
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': env('DATABASE_NAME'),
+        'USER': env('DATABASE_USER'),
+        'PASSWORD': env('DATABASE_PASSWORD'),
+        'HOST': env('DATABASE_HOST'),
+        'PORT': env('DATABASE_PORT'),
+    }
+}
 
 
 # Password validation
@@ -201,6 +204,10 @@ CORS_ALLOW_CREDENTIALS = True
 
 # ========== email settings ==========
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = os.environ.get('EMAIL_HOST')
+# EMAIL_FROM = os.environ.get('EMAIL_FROM')
+# EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+# EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 EMAIL_HOST = env('EMAIL_HOST')
 EMAIL_FROM = env('EMAIL_FROM')
 EMAIL_HOST_USER = env('EMAIL_HOST_USER')
@@ -213,7 +220,9 @@ EMAIL_USE_TLS = True
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/1",
+        # "LOCATION": "redis://127.0.0.1:6379",
+        # "LOCATION": env('REDIS'),
+        "LOCATION": "redis://redis:6379",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient"
         },
@@ -224,8 +233,10 @@ CACHE_TTL = 60 * 2
 
 
 # ========== celery settings ==========
-CELERY_BROKER_URL = 'redis://127.0.0.1:6379/1'
-CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/1'
+# CELERY_BROKER_URL = 'redis://127.0.0.1:6379'
+# CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379'
+CELERY_BROKER_URL = "redis://redis:6379"
+CELERY_RESULT_BACKEND = "redis://redis:6379"
 CELERY_TIMEZONE = 'UTC'
 
 
@@ -235,3 +246,7 @@ CELERY_TIMEZONE = 'UTC'
 SMS_PHONE = env('SMS_PHONE')
 SMS_USER = env('SMS_USER')
 SMS_PASSWORD = env('SMS_PASSWORD')
+
+# SMS_PHONE = os.environ.get('SMS_PHONE')
+# SMS_USER = os.environ.get('SMS_USER')
+# SMS_PASSWORD = os.environ.get('SMS_PASSWORD')

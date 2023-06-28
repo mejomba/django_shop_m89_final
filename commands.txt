@@ -1,0 +1,10 @@
+docker-compose up
+part#3
+docker-compose build
+docker-compose run --rm app django-admin startproject core .
+docker-compose up
+docker exec -it django_container /bin/bash
+
+part#4
+docker-compose run django_spp sh -c "django-admin start app ."
+docker exec -it django_app sh
