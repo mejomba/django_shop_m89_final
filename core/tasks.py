@@ -50,9 +50,9 @@ def send_confirmation_email(current_site, email, user_id):
     # return HttpResponse(_('برو ایمیل چک کن'))
 
 
-@shared_task
-def send_otp_email(email, otp_code):
-    print(otp_code)
+# @shared_task
+def send_otp_email(user_email, otp_code):
+    print(user_email, otp_code)
     # user = get_user_model().objects.filter(id=user_id).first()
     # current_site = get_current_site(request)
     mail_subject = _('کد ورود یکبار مصرف')
@@ -62,9 +62,10 @@ def send_otp_email(email, otp_code):
 
     # msg = render_to_string('core/otp_email.html', context)
     msg = f"کد ورود شما: {otp_code}"
-    to_email = email
-    email = EmailMessage(mail_subject, msg, to=[to_email])
+    email = EmailMessage(mail_subject, msg, to=[user_email])
+    print('before send email')
     email.send()
+    print('after send email')
     # return HttpResponse(_('برو ایمیل چک کن'))
 
 
